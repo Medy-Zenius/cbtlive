@@ -29,21 +29,21 @@
 (defn acak-soal
   [dt]
   (let [a (group-by #(nth % 3) dt)
-        b (filter #(= "-" (first %)) a)
-        b1 (group-by #(last %) (second (first b)))
-        b2 (filter #(= "-" (first %)) b1)
-        b3 (map #(second %) b2)
+        b (vals a)
+        bo (filter #(= (str (nth (first %) 3)) "-") b)
+        b1 (first bo)
+        b2 (group-by #(last %) b1)
+        b3 (vals b2)
+        sound (shuffle (filter #(not= "-" (str (last (first %)))) b3))
+        nots (first (filter #(= "-" (str (last (first %)))) b3))
 
-        c (filter #(not= "-" (first %)) b1)
-        c1 (map #(second %) c)
+        co (filter #(not= (str (nth (first %) 3)) "-") b)
 
-        d (filter #(not= "-" (first %)) a)
-        e (map #(second %) d)
-        f (concat (first b3) e)
-        g (concat c1 (shuffle f))
-        h (partition 5 (flatten g))
+        nots_co (shuffle (concat nots co))
+        vgab (concat sound nots_co)
+        vfinal (partition 5 (flatten vgab))
         ]
-    h))
+    vfinal))
 
 (defn handle-kodeto1 [kodeto]
   (let [pre (subs kodeto 0 1)
@@ -58,9 +58,11 @@
            (let [jsoal (data :jsoal)
                  vjaw (partition 5 (interleave (range 1 (inc jsoal)) (data :jenis) (data :upto)
                                                (if (data :pretext) (read-string (data :pretext)) (repeat jsoal "-"))
-                                               (if (data :pretext) (read-string (data :sound)) (repeat jsoal "-"))))
-                 ;vjaw-acak vjaw
+                                               (if (data :sound) (read-string (data :sound)) (repeat jsoal "-"))))
+                 ;vjaw_vec (vec (map #(vec %) vjaw))
                  vjaw1 (if (= "1" (data :acak)) (acak-soal vjaw) vjaw)
+                 ;vjaw1 vjaw
+                 ;x (println (acak-soal vjaw))
                  nsoal (vec (map #(first %) vjaw1))
                  njenis (vec (map #(second %) vjaw1))
                  nupto (apply str (map #(str (nth % 2)) vjaw1))

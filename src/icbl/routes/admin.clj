@@ -71,7 +71,7 @@
     (if (or (not= pwlama pwnow) (< (count pwbaru) 5))
         (layout/render "admin/pesan.html" {:pesan "Password Lama tidak benar atau password baru kurang dari lima huruf!"})
         (if (= pwbaru pwbaru1)
-          (try (spit "data/pw.txt" pwbaru)
+          (try (db/update-data-1 "admin" ["id=?" "admin"] {:pass pwbaru})
                  (layout/render "admin/pesan.html" {:pesan "Berhasil mengubah password admin!"})
                (catch Exception ex
                   (layout/render "admin/pesan.html" {:pesan "Gagal mengubah data password admin!"})))
