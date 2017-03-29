@@ -24,9 +24,9 @@
   :ring {:handler icbl.handler/app
          :init icbl.handler/init
          :destroy icbl.handler/destroy
-         ;:port 24699
-         :port 30879
-         ;:port 5000
+         ;:port 24699 ;cbt.zeniusprestasi.com
+         ;:port 30879
+         :port 5000
          }
   :aot :all
   :profile
