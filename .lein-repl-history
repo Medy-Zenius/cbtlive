@@ -340,3 +340,21 @@ exit
 (start-server)
 exit
 (start-server)
+exit
+(start-server)
+exit
+(start-server)
+slurp /Users/medysuharta/Documents/app_school/xls/smp4tangselkelas7.csv
+(stop server)
+exit
+(slurp /Users/medysuharta/Documents/app_school/xls/smp4tangselkelas7.csv)
+(+ 1 1)
+(slurp "/Users/medysuharta/app_school/xls/smp4tangselkelas7.csv")
+(slurp "data/smp4tangselkelas7.csv")
+(slurp "/data/smp4tangselkelas7.csv")
+(slurp "icbl/data/smp4tangselkelas7.csv")
+(slurp "src/icbl/data/smp4tangselkelas7.csv")
+(start-server)
+exit
+(start-server)
+exit

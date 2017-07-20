@@ -350,7 +350,9 @@
 (defn handle-input-siswa [file]
   (let [data (slurp (:tempfile file))
         sdata (st/split data #"\n")
-        vdata (map #(st/split % #",") (if (not (vector? sdata)) (st/split data #"\r") sdata))]
+        vdata (map #(st/split % #",") (if (not (vector? sdata)) (st/split data #"\r") sdata))
+        ;coba (spit (str vdata) "coba.txt")
+        ]
         (loop [i 0]
           (if (= i (count vdata))
             (layout/render "admin/pesan.html" {:pesan "Menambah data siswa telah selesai!"})

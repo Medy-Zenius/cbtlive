@@ -585,9 +585,11 @@
   (let [postkode (subs kode 1 (count kode))
         datum (db/get-data (str "select * from bankproset where kode='" postkode "'") 1)]
     (layout/render "admin/view-soal-sekaligus.html" {:datum datum
-                                                       :pel (:pelajaran datum)
-                                                       :kode kode
-                                                       ;soalpath "http://localhost/resources/public"
+                                                     :pel (:pelajaran datum)
+                                                     :kode kode
+                                                     :npretext (if (datum :pretext) (read-string (datum :pretext)) nil)
+                                                     :nsound (if (datum :sound) (read-string (datum :sound)) nil)
+                                                     ;soalpath "http://localhost/resources/public"
                                                        })))
 
 (defn handle-teacher-hapus-bp-1 [kode]

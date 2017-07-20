@@ -39,8 +39,8 @@
 
         d (filter #(not= "-" (first %)) a)
         e (map #(second %) d)
-        f (concat (first b3) c1 e)
-        g (shuffle f)
+        f (concat (first b3) e)
+        g (concat c1 (shuffle f))
         h (partition 5 (flatten g))
         ]
     h))
