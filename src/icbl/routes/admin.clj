@@ -364,7 +364,8 @@
                                            :kelas ((nth vdata i) 2)
                                            ;:email ((nth vdata i) 3)
                                            ;:NPSN ((nth vdata i) 4)
-                                           :password (if ((nth vdata i) 3) ((nth vdata i) 3) "12345")
+                                           ;:password (if ((nth vdata i) 3) ((nth vdata i) 3) "12345")
+                                           :password "12345"
                                            })))
               (recur (inc i)))))))
 
