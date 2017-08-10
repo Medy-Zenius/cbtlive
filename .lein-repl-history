@@ -361,3 +361,31 @@ exit
 (start-server)
 (start-server "3002")
 exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+(count [1 2 3])
+(clojure.string/lower-case "NaMa")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit

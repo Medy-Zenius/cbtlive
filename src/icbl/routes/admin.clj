@@ -35,17 +35,32 @@
 
 (defn handle-list-nama [nm]
   (let [upnm (clojure.string/upper-case nm)
-        data (db/get-data (str "select nis,nama,kelas from users where upper(nama) LIKE '%" upnm "%' order by nama") 2)]
+        cdata (:jumlah (db/get-data (str "select count(*) as jumlah from users where upper(nama) LIKE '%" upnm "%'") 1))
+        data (db/get-data (str "select nis,nama,kelas from users where upper(nama) LIKE '%" upnm "%'
+                               order by nama LIMIT 15") 2)]
        (if data
-         (layout/render "admin/list-siswa-nama.html" {:data data})
+         (layout/render "admin/list-siswa-nama.html"
+                        {:data data :cdata cdata :urut "nama" :vnama upnm :page 0})
          (layout/render "admin/pesan.html" {:pesan "Tidak ada nama tersebut!"}))
     ))
 
+(defn list-siswa-newpage [urut newpage vnama cdata]
+  (let [data (db/get-data (str "select nis,nama,kelas from users where upper(nama)
+                               LIKE '%" vnama "%' order by " urut " LIMIT 15 OFFSET "
+                               (* (read-string newpage) 15)) 2)]
+    (layout/render "admin/list-siswa-nama.html"
+                   {:data data :cdata (read-string cdata)
+                    :urut urut :vnama vnama :page (read-string newpage)})))
+
 (defn handle-do-edit-siswa [nis]
   (let [datum (db/get-data (str "select * from users where nis='" nis "'") 1)
-        daftarkelas (db/get-data "select namakelas from kelas order by namakelas asc" 2)]
+        ;daftarkelas (db/get-data "select namakelas from kelas order by namakelas asc" 2)
+        ]
     (layout/render "admin/edit-data-siswa.html"
-                 {:datum datum :daftarkelas daftarkelas})))
+                 {:datum datum
+                  ;:daftarkelas daftarkelas
+                  }
+                   )))
 
 (defn handle-update-data-siswa [nislama nisbaru nama kelas email pass]
   (try (db/update-data-1 "users"
@@ -157,6 +172,38 @@
                                order by keterangan") 2)
         ]
     (layout/render "admin/list-proset.html" {:data data :action act :pel pel :ket ket})))
+
+(defn handle-admin-pilih-sekolah [kode act]
+  (let [sekolah (db/get-data (str "select kode,nasek from sekolah order by kode") 2)]
+    (layout/render "admin/view-sekolah.html" {:kodesoal kode :data sekolah :action act})))
+
+(defn admin-pilih-kelas [kosek kodesoal act]
+  (let [allkelas (db/get-data (str "select dataus.nis as nis,kelas from dataus INNER JOIN users
+                                 ON dataus.nis=users.nis where dataus.kode='" kodesoal "'
+                                   and dataus.nis LIKE '" kosek "%'") 2)
+        vkelas (conj (sort (distinct (map #(:kelas %) allkelas))) "SEMUA")]
+    (layout/render "admin/pilih-kelas.html" {:kelas vkelas :kodesoal kodesoal :kosek kosek :action act})))
+
+(defn admin-hasil-test [kodesoal kosek kelas html]
+  (let [prekode (subs kodesoal 0 1)
+        postkode (subs kodesoal 1 (count kodesoal))
+        ;ckode (count kodesoal)
+        ;tdata (if (= prekode "B") "bankproset" "proset")
+        mdata (db/get-data (str "select kode,pelajaran,keterangan,jsoal from bankproset where kode='" postkode "'") 1)
+;;         data (db/get-data (str "select dataus.nis as nis,nama,kelas,nilai,jawaban from dataus INNER JOIN " tdata "
+;;                                ON " tdata ".kode=to_number(substring(dataus.kode,2," ckode "),'999999999')
+;;                                INNER JOIN users ON users.nis=dataus.nis
+;;                                where " tdata ".kode='" postkode "' order by nilai desc") 2)
+        data (if (= kelas "SEMUA")
+                 (db/get-data (str "select dataus.nis as nis,nama,kelas,nilai,jawaban from dataus INNER JOIN
+                               users ON users.nis=dataus.nis WHERE dataus.kode='" kodesoal "' and
+                                   dataus.nis LIKE '" kosek "%' order by nilai desc") 2)
+                 (db/get-data (str "select dataus.nis as nis,nama,kelas,nilai,jawaban from dataus INNER JOIN
+                               users ON users.nis=dataus.nis WHERE dataus.kode='" kodesoal "' and kelas='" kelas "'
+                                   and dataus.nis LIKE '" kosek "%' order by nilai desc") 2))
+        ;data1 (map #(num-to-str (:nilai %)) data)
+        kunci (:kunci (db/get-data (str "select kunci from bankproset where kode='" postkode "'") 1))]
+    (layout/render html {:data data :mdata mdata :kunci kunci :kode kodesoal})))
 
 (defn admin-edit-proset [kode]
   (let [postkode (subs kode 1 (count kode))
@@ -402,6 +449,8 @@
 
   (GET "/edit-siswa" []
        (layout/render "admin/search-siswa.html"))
+  (POST "/list-siswa-newpage" [urut newpage vnama cdata]
+        (list-siswa-newpage urut newpage vnama cdata))
   (POST "/edit-siswa" [nama]
         (handle-list-nama nama))
   (POST "/do-edit-siswa" [nis]
@@ -464,14 +513,17 @@
        (admin-pilih-guru "/admin-pilih-proset"))
   (POST "/admin-pilih-proset" [id]
         (teacher/teacher-pilih-proset "L" id "/teacher-pilih-kelas"))
+
   (GET "/admin-hasil-testB" []
        (admin-search-proset "/admin-hasil-test-search"))
   (POST "/admin-hasil-test-search" [pel ket]
-       (handle-admin-search-proset pel ket "/admin-pilih-kelasB"))
-  (POST "/admin-pilih-kelasB" [kode]
-        (teacher/teacher-pilih-kelas kode "/admin-hasil-testB"))
-  (POST "/admin-hasil-testB" [kode kelas]
-       (teacher/teacher-hasil-test kode kelas "teacher/hasil-test.html"))
+       (handle-admin-search-proset pel ket "/admin-pilih-sekolahB"))
+  (POST "/admin-pilih-sekolahB" [kode]
+       (handle-admin-pilih-sekolah kode "/admin-pilih-kelasB"))
+  (POST "/admin-pilih-kelasB" [kosek kodesoal]
+        (admin-pilih-kelas kosek kodesoal "/admin-hasil-testB"))
+  (POST "/admin-hasil-testB" [kodesoal kosek kelas]
+       (admin-hasil-test kodesoal kosek kelas "admin/hasil-test.html"))
 
   ;;Analisis Butir Soal
   (GET "/admin-abs" []
@@ -552,11 +604,24 @@
   (GET "/admin-hasil-test-excelB" []
        (admin-search-proset "/admin-hasil-test-excelB-search"))
   (POST "/admin-hasil-test-excelB-search" [pel ket]
-       (handle-admin-search-proset pel ket "/admin-pilih-kelas-excelB"))
-  (POST "/admin-pilih-kelas-excelB" [kode]
-        (teacher/teacher-pilih-kelas kode "/admin-hasil-test-excelB"))
-  (POST "/admin-hasil-test-excelB" [kode kelas]
-        (teacher/teacher-hasil-test kode kelas "teacher/hasil-test-excel.html"))
+       (handle-admin-search-proset pel ket "/admin-pilih-sekolah-excelB"))
+  (POST "/admin-pilih-sekolah-excelB" [kode]
+       (handle-admin-pilih-sekolah kode "/admin-pilih-kelas-excelB"))
+  (POST "/admin-pilih-kelas-excelB" [kosek kodesoal]
+        (admin-pilih-kelas kosek kodesoal "/admin-hasil-test-excelB"))
+  (POST "/admin-hasil-test-excelB" [kodesoal kosek kelas]
+        (admin-hasil-test kodesoal kosek kelas "teacher/hasil-test-excel.html"))
+
+;;   (GET "/admin-hasil-testB" []
+;;        (admin-search-proset "/admin-hasil-test-search"))
+;;   (POST "/admin-hasil-test-search" [pel ket]
+;;        (handle-admin-search-proset pel ket "/admin-pilih-sekolahB"))
+;;   (POST "/admin-pilih-sekolahB" [kode]
+;;        (handle-admin-pilih-sekolah kode "/admin-pilih-kelasB"))
+;;   (POST "/admin-pilih-kelasB" [kosek kodesoal]
+;;         (admin-pilih-kelas kosek kodesoal "/admin-hasil-testB"))
+;;   (POST "/admin-hasil-testB" [kodesoal kosek kelas]
+;;        (admin-hasil-test kodesoal kosek kelas "admin/hasil-test.html"))
 
   (GET "/admin-abs-excelB" []
        (admin-search-proset "/admin-abs-excelB-search"))

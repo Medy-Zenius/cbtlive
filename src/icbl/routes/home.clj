@@ -166,6 +166,34 @@
         data (db/get-data (str "select pelajaran,keterangan from " tabel " where kode='" remko "'") 1)]
   (layout/render "home/tryout-lanjutan.html" {:data data :kodeto kode})))
 
+(defn home-ganti-pw-siswa [pwlama pwbaru1 pwbaru2]
+  (let [pwnow (:password (db/get-data (str "select password from users where nis='" (session/get :id) "'") 1))]
+    (if (or (not= pwlama pwnow) (< (count pwbaru1) 5))
+        (layout/render "home/ganti-pw.html" {:error "Password Lama tidak benar atau password baru kurang dari lima huruf!"})
+        (if (= pwbaru1 pwbaru2)
+          (try (db/update-data "users" (str "nis='" (session/get :id) "'") {:password pwbaru2})
+                 (do
+                    (session/clear!)
+                    (resp/redirect "/"))
+               (catch Exception ex
+                  (layout/render "home/ganti-pw.html" {:error "Gagal ganti password!"})))
+          (layout/render "home/ganti-pw.html" {:error "Password tidak sesuai!"})))))
+
+(defn handle-lihat-hasil [nis]
+  (let [data (db/get-data
+               (str "select tanggal,kode,nilai from dataus where nis='" nis "' order by tanggal desc") 2)]
+    (layout/render "home/list-nilai.html" {:data data})))
+
+(defn handle-detail-set [kode nis]
+  (let [pre (subs kode 0 1)
+        remko (subs kode 1 (count kode))
+        tabel (if (= pre "B") "bankproset" "proset")
+        ket (db/get-data (str "select kode,pelajaran,keterangan from " tabel "
+                              where kode='" remko "'") 1)
+        nilai (db/get-data (str "select nilai from  dataus  where kode='" kode "'
+                                and nis='" nis "'") 1)]
+    (layout/render "home/detail-set.html" {:ket ket :nilai nilai})))
+
 (defroutes home-routes
   (GET "/" [] (home-login))
   (GET "/home" []
@@ -182,7 +210,20 @@
        (share/logout "/"))
 
   (POST "/home-no-lstore" []
+        (layout/render "home/kode1p.html"))
+  (POST "/home-input-kode" []
         (layout/render "home/kode1.html"))
+
+  (POST "/home-ganti-pw" []
+        (layout/render "home/ganti-pw.html"))
+  (POST "/home-ganti-pw1" [pwlama pwbaru1 pwbaru2]
+        (home-ganti-pw-siswa pwlama pwbaru1 pwbaru2))
+
+  (POST "/home-lihat-hasil" []
+        (handle-lihat-hasil (session/get :id)))
+
+  (POST "/home-detail-set" [kode]
+        (handle-detail-set kode (session/get :id)))
 
   (POST "/home-lstore" []
         (layout/render "home/kode2.html"))
