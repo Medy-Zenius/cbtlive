@@ -432,6 +432,28 @@
     (db/delete-data "teacher" (str "id='" id "'"))
     (admin-hapus-guru "/admin-hapus-guru")))
 
+(defn admin-tambah-sekolah [kode sekolah npsn]
+  (try
+     (db/insert-data "sekolah" {:kode kode :nasek sekolah :npsn npsn})
+     (layout/render "admin/pesan.html" {:pesan (str "Berhasil menambah sekolah dengan nama " sekolah)})
+     (catch Exception ex
+     (layout/render "admin/pesan.html" {:pesan "Gagal menambah Sekolah!"}))))
+
+(defn admin-view-sekolah []
+  (let [data (db/get-data "select * from sekolah order by nasek" 2)]
+    (layout/render "admin/view-sekolah-edit.html" {:data data})))
+
+(defn admin-edit-sekolah [kode]
+  (let [data (db/get-data (str "select * from sekolah where kode='" kode "'") 1)]
+    (layout/render "admin/edit-sekolah.html" {:datum data})))
+
+(defn admin-update-sekolah [kode nasek npsn]
+  (try
+    (db/update-data "sekolah" (str "kode='" kode "'") {:nasek nasek :npsn npsn})
+    (layout/render "admin/pesan.html" {:pesan "Berhasil Update Sekolah!"})
+    (catch Exception ex
+     (layout/render "admin/pesan.html" {:pesan "Gagal Update Sekolah!"}))))
+
 ;;;routes
 (defroutes admin-routes
 
@@ -612,17 +634,6 @@
   (POST "/admin-hasil-test-excelB" [kodesoal kosek kelas]
         (admin-hasil-test kodesoal kosek kelas "teacher/hasil-test-excel.html"))
 
-;;   (GET "/admin-hasil-testB" []
-;;        (admin-search-proset "/admin-hasil-test-search"))
-;;   (POST "/admin-hasil-test-search" [pel ket]
-;;        (handle-admin-search-proset pel ket "/admin-pilih-sekolahB"))
-;;   (POST "/admin-pilih-sekolahB" [kode]
-;;        (handle-admin-pilih-sekolah kode "/admin-pilih-kelasB"))
-;;   (POST "/admin-pilih-kelasB" [kosek kodesoal]
-;;         (admin-pilih-kelas kosek kodesoal "/admin-hasil-testB"))
-;;   (POST "/admin-hasil-testB" [kodesoal kosek kelas]
-;;        (admin-hasil-test kodesoal kosek kelas "admin/hasil-test.html"))
-
   (GET "/admin-abs-excelB" []
        (admin-search-proset "/admin-abs-excelB-search"))
   (POST "/admin-abs-excelB-search" [pel ket]
@@ -718,4 +729,15 @@
        (layout/render "admin/input-siswa.html"))
   (POST "/admin-input-siswa" [file]
         (handle-input-siswa file))
+
+  (GET "/admin-tambah-sekolah" []
+       (layout/render "admin/tambah-sekolah.html"))
+  (POST "/admin-tambah-sekolah" [kode sekolah npsn]
+       (admin-tambah-sekolah kode sekolah npsn))
+  (GET "/admin-edit-sekolah" []
+       (admin-view-sekolah))
+  (POST "/admin-edit-sekolah" [kode]
+        (admin-edit-sekolah kode))
+  (POST "/admin-update-sekolah" [kode nasek npsn]
+        (admin-update-sekolah kode nasek npsn))
 )
