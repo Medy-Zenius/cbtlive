@@ -10,13 +10,9 @@
             [icbl.routes.teacher :as teacher]
             ))
 
-(defn num-to-str [number]
-  (let [snum (str number)]
-    (cond
-      (<= (count snum) 2) (str snum ",00")
-      (= (subs snum 1 2) ".") (if (= (count (subs snum 2 (count snum))) 1) (str (subs snum 0 1) "," (subs snum 2 3) "0")
-                                  (str (subs snum 0 1) "," (subs snum 2 (count snum))))
-      )))
+(defn num-to-str [number dk]
+  (-> (format (str "%." dk "f") (* number 1.0))
+      (clojure.string/replace #"\." ",")))
 
 (defn admin-home []
   (layout/render "admin/home.html")
@@ -201,9 +197,11 @@
                  (db/get-data (str "select dataus.nis as nis,nama,kelas,nilai,jawaban from dataus INNER JOIN
                                users ON users.nis=dataus.nis WHERE dataus.kode='" kodesoal "' and kelas='" kelas "'
                                    and dataus.nis LIKE '" kosek "%' order by nilai desc") 2))
-        ;data1 (map #(num-to-str (:nilai %)) data)
+        ;data1 (map #(num-to-str (:nilai %) 2) data)
+        data1 (map #(update-in %1 [:nilai] num-to-str 2) data)
         kunci (:kunci (db/get-data (str "select kunci from bankproset where kode='" postkode "'") 1))]
-    (layout/render html {:data data :mdata mdata :kunci kunci :kode kodesoal})))
+    ;(println data2)
+    (layout/render html {:data data1 :mdata mdata :kunci kunci :kode kodesoal})))
 
 (defn admin-edit-proset [kode]
   (let [postkode (subs kode 1 (count kode))
@@ -454,6 +452,25 @@
     (catch Exception ex
      (layout/render "admin/pesan.html" {:pesan "Gagal Update Sekolah!"}))))
 
+(defn admin-registrasi-siswa [nis nama kelas email]
+  (let [data (db/get-data (str "select nis from users where nis='" nis "'") 1)]
+    (if data
+        (layout/render "admin/registrasi-siswa.html"
+                       {:nis nis
+                        :namaku nama
+                        :kelas kelas
+                        :email email
+                        :error "NIS tersebut sudah terdaftar!"})
+        (try
+          (db/insert-data "users" {:nis nis
+                                   :nama nama
+                                   :kelas kelas
+                                   :email email
+                                   :password "12345"})
+          (layout/render "admin/pesan.html" {:pesan "Berhasil registrasi siswa!"})
+          (catch Exception ex
+             (layout/render "admin/pesan.html" {:pesan "Gagal registrasi siswa!"}))))))
+
 ;;;routes
 (defroutes admin-routes
 
@@ -468,6 +485,11 @@
 
   (POST "/admin-login" [pass]
       (handle-login pass))
+
+  (GET "/admin-registrasi-siswa" []
+       (layout/render "admin/registrasi-siswa.html"))
+  (POST "/admin-registrasi-siswa" [nis nama kelas email]
+        (admin-registrasi-siswa nis nama kelas email))
 
   (GET "/edit-siswa" []
        (layout/render "admin/search-siswa.html"))
@@ -543,9 +565,11 @@
   (POST "/admin-pilih-sekolahB" [kode]
        (handle-admin-pilih-sekolah kode "/admin-pilih-kelasB"))
   (POST "/admin-pilih-kelasB" [kosek kodesoal]
-        (admin-pilih-kelas kosek kodesoal "/admin-hasil-testB"))
+        (if (= kosek "SEMUA")
+          (admin-hasil-test kodesoal "" "SEMUA" "admin/hasil-test.html")
+          (admin-pilih-kelas kosek kodesoal "/admin-hasil-testB")))
   (POST "/admin-hasil-testB" [kodesoal kosek kelas]
-       (admin-hasil-test kodesoal kosek kelas "admin/hasil-test.html"))
+         (admin-hasil-test kodesoal kosek kelas "admin/hasil-test.html"))
 
   ;;Analisis Butir Soal
   (GET "/admin-abs" []
@@ -630,7 +654,9 @@
   (POST "/admin-pilih-sekolah-excelB" [kode]
        (handle-admin-pilih-sekolah kode "/admin-pilih-kelas-excelB"))
   (POST "/admin-pilih-kelas-excelB" [kosek kodesoal]
-        (admin-pilih-kelas kosek kodesoal "/admin-hasil-test-excelB"))
+        (if (= kosek "SEMUA")
+          (admin-hasil-test kodesoal "" "SEMUA" "teacher/hasil-test-excel.html")
+          (admin-pilih-kelas kosek kodesoal "/admin-hasil-test-excelB")))
   (POST "/admin-hasil-test-excelB" [kodesoal kosek kelas]
         (admin-hasil-test kodesoal kosek kelas "teacher/hasil-test-excel.html"))
 
