@@ -5,20 +5,6 @@
         var jsoal={{mdata.jsoal}};
         var kunci='{{kunci}}';
 
-        function convert(nilai){
-           var snilai="";
-           var lnilai=nilai.length;
-           if (lnilai <= 2){
-               snilai=nilai+",00";
-           }else{
-             if (lnilai == 3){
-                snilai = nilai.substring(0,1)+","+nilai.substring(2,3)+"0";
-             }else{
-                snilai = nilai.substring(0,1)+","+nilai.substring(2,(nilai.length));
-             }
-           }
-           return snilai;
-        }
     </script>
 
     <h2 align="center">HASIL TEST</h2>
@@ -58,9 +44,7 @@
                   document.write('<td align="center">'+jwb.substring(i,i+1)+'</td>');
                 }
             </script>
-            <td><script>document.write(convert('{{datum.nilai}}'))</script></td>
-            <!--<td>{{datum.nilai}}</td>
-              -->
+            <td>{{datum.nilai}}</td>
         </tr>
         {% endfor %}
     </table>

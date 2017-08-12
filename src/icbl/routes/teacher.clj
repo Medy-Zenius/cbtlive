@@ -8,6 +8,10 @@
             [clojure.data.json :as json]
             ))
 
+(defn teacher-num-to-str [number dk]
+  (-> (format (str "%." dk "f") (* number 1.0))
+      (clojure.string/replace #"\." ",")))
+
 (defn teacher-home []
   (layout/render "teacher/home.html"))
 
@@ -202,9 +206,9 @@
                  (db/get-data (str "select dataus.nis as nis,nama,kelas,nilai,jawaban from dataus INNER JOIN
                                users ON users.nis=dataus.nis WHERE dataus.kode='" kode "' and kelas='" kelas "'
                                order by nilai desc") 2))
-        ;data1 (map #(num-to-str (:nilai %)) data)
+        data1 (map #(update-in %1 [:nilai] teacher-num-to-str 2) data)
         kunci (:kunci (db/get-data (str "select kunci from " tdata " where kode='" postkode "'") 1))]
-    (layout/render html {:data data :mdata mdata :kunci kunci :kode kode})))
+    (layout/render html {:data data1 :mdata mdata :kunci kunci :kode kode})))
 
 (defn teacher-test-detail-siswa [nis kode]
   (let [prekode (subs kode 0 1)

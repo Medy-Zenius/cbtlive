@@ -414,3 +414,6 @@ exit
 (start-server "3002")
 exit
 (start-server "3002")
+exit
+(start-server "3002")
+exit
