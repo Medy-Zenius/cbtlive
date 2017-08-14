@@ -58,14 +58,15 @@
                   }
                    )))
 
-(defn handle-update-data-siswa [nislama nisbaru nama kelas email pass]
+(defn handle-update-data-siswa [nislama nisbaru nama kelas email pass passortu]
   (try (db/update-data-1 "users"
                               ["nis=?" nislama]
                                       {:nis nisbaru
                                        :nama nama
                                        :kelas kelas
                                        :email email
-                                       :password pass})
+                                       :password pass
+                                       :passortu passortu})
                (layout/render "admin/pesan.html" {:pesan "Berhasil mengubah data siswa!"})
                (catch Exception ex
                 (layout/render "admin/pesan.html" {:pesan "Gagal mengubah data siswa!"}))))
@@ -161,13 +162,14 @@
       (catch Exception ex
                   (layout/render "admin/pesan.html" {:pesan (str "Gagal daftarkan proset! error: " ex)}))))
 
-(defn handle-admin-search-proset [pel ket act]
+(defn handle-admin-search-proset [pel ket act target]
   (let [Uket (clojure.string/upper-case ket)
         data (db/get-data (str "select kode,pelajaran,keterangan,jsoal,waktu,status from bankproset where
                                pelajaran='" pel "' and upper(keterangan) LIKE '%" Uket "%'
                                order by keterangan") 2)
         ]
-    (layout/render "admin/list-proset.html" {:data data :action act :pel pel :ket ket})))
+    (layout/render "admin/list-proset.html" {:data data :action act :pel pel :ket ket
+                                             :target target})))
 
 (defn handle-admin-pilih-sekolah [kode act]
   (let [sekolah (db/get-data (str "select kode,nasek from sekolah order by kode") 2)]
@@ -302,7 +304,7 @@
     (layout/render "admin/view-soal.html" {:datum datum
                                              :nsoal (vec (range 1 (inc (datum :jsoal))))
                                              :kategori "1"
-                                             :pel pel
+                                             ;:pel pel
                                              :npretext (if (datum :pretext) (read-string (datum :pretext)) nil)
                                              :nsound (if (datum :sound) (read-string (datum :sound)) nil)
                                              ;:soalpath "http://127.0.0.1/resources/public"
@@ -411,6 +413,7 @@
                                            ;:NPSN ((nth vdata i) 4)
                                            ;:password (if ((nth vdata i) 3) ((nth vdata i) 3) "12345")
                                            :password "12345"
+                                           :passortu "abcde"
                                            })))
               (recur (inc i)))))))
 
@@ -466,7 +469,8 @@
                                    :nama nama
                                    :kelas kelas
                                    :email email
-                                   :password "12345"})
+                                   :password "12345"
+                                   :passortu "abcde"})
           (layout/render "admin/pesan.html" {:pesan "Berhasil registrasi siswa!"})
           (catch Exception ex
              (layout/render "admin/pesan.html" {:pesan "Gagal registrasi siswa!"}))))))
@@ -499,8 +503,8 @@
         (handle-list-nama nama))
   (POST "/do-edit-siswa" [nis]
         (handle-do-edit-siswa nis))
-  (POST "/update-data-siswa" [nislama nisbaru nama kelas email pass]
-        (handle-update-data-siswa nislama nisbaru nama kelas email pass))
+  (POST "/update-data-siswa" [nislama nisbaru nama kelas email pass passortu]
+        (handle-update-data-siswa nislama nisbaru nama kelas email pass passortu))
   (POST "/delete-data-siswa" [nislama]
         (handle-delete-data-siswa nislama))
   (GET "/admin-delete-siswa" []
@@ -561,7 +565,7 @@
   (GET "/admin-hasil-testB" []
        (admin-search-proset "/admin-hasil-test-search"))
   (POST "/admin-hasil-test-search" [pel ket]
-       (handle-admin-search-proset pel ket "/admin-pilih-sekolahB"))
+       (handle-admin-search-proset pel ket "/admin-pilih-sekolahB" ""))
   (POST "/admin-pilih-sekolahB" [kode]
        (handle-admin-pilih-sekolah kode "/admin-pilih-kelasB"))
   (POST "/admin-pilih-kelasB" [kosek kodesoal]
@@ -595,28 +599,28 @@
   (GET "/admin-absB" []
        (admin-search-proset "/admin-absB-search"))
   (POST "/admin-absB-search" [pel ket]
-       (handle-admin-search-proset pel ket "/admin-absB"))
+       (handle-admin-search-proset pel ket "/admin-absB" ""))
   (POST "/admin-absB" [kode]
         (teacher/teacher-abs kode "teacher/hasil-abs.html"))
 
   (GET "/admin-abs-tkB" []
        (admin-search-proset "/admin-abs-tkB-search"))
   (POST "/admin-abs-tkB-search" [pel ket]
-       (handle-admin-search-proset pel ket "/admin-abs-tkB"))
+       (handle-admin-search-proset pel ket "/admin-abs-tkB" ""))
   (POST "/admin-abs-tkB" [kode]
         (teacher/teacher-abs-tk kode "teacher/hasil-abs-tk.html"))
 
   (GET "/admin-abs-dpB" []
        (admin-search-proset "/admin-abs-dpB-search"))
   (POST "/admin-abs-dpB-search" [pel ket]
-       (handle-admin-search-proset pel ket "/admin-abs-dpB"))
+       (handle-admin-search-proset pel ket "/admin-abs-dpB" ""))
   (POST "/admin-abs-dpB" [kode]
         (teacher/teacher-abs-dp kode "teacher/hasil-abs-dp.html"))
 
   (GET "/admin-dayakecohB" []
        (admin-search-proset "/admin-dayakecohB-search"))
   (POST "/admin-dayakecohB-search" [pel ket]
-       (handle-admin-search-proset pel ket "/admin-dayakecohB"))
+       (handle-admin-search-proset pel ket "/admin-dayakecohB" ""))
   (POST "/admin-dayakecohB" [kode]
         (teacher/teacher-dayakecoh kode "teacher/hasil-dayakecoh.html"))
 
@@ -650,7 +654,7 @@
   (GET "/admin-hasil-test-excelB" []
        (admin-search-proset "/admin-hasil-test-excelB-search"))
   (POST "/admin-hasil-test-excelB-search" [pel ket]
-       (handle-admin-search-proset pel ket "/admin-pilih-sekolah-excelB"))
+       (handle-admin-search-proset pel ket "/admin-pilih-sekolah-excelB" ""))
   (POST "/admin-pilih-sekolah-excelB" [kode]
        (handle-admin-pilih-sekolah kode "/admin-pilih-kelas-excelB"))
   (POST "/admin-pilih-kelas-excelB" [kosek kodesoal]
@@ -663,28 +667,28 @@
   (GET "/admin-abs-excelB" []
        (admin-search-proset "/admin-abs-excelB-search"))
   (POST "/admin-abs-excelB-search" [pel ket]
-       (handle-admin-search-proset pel ket "/admin-abs-excelB"))
+       (handle-admin-search-proset pel ket "/admin-abs-excelB" ""))
   (POST "/admin-abs-excelB" [kode]
         (teacher/teacher-abs kode "teacher/hasil-abs-excel.html"))
 
   (GET "/admin-abs-tk-excelB" []
        (admin-search-proset "/admin-abs-tk-excelB-search"))
   (POST "/admin-abs-tk-excelB-search" [pel ket]
-       (handle-admin-search-proset pel ket "/admin-abs-tk-excelB"))
+       (handle-admin-search-proset pel ket "/admin-abs-tk-excelB" ""))
   (POST "/admin-abs-tk-excelB" [kode]
         (teacher/teacher-abs-tk kode "teacher/hasil-abs-tk-excel.html"))
 
   (GET "/admin-abs-dp-excelB" []
        (admin-search-proset "/admin-abs-dp-excelB-search"))
   (POST "/admin-abs-dp-excelB-search" [pel ket]
-       (handle-admin-search-proset pel ket "/admin-abs-dp-excelB"))
+       (handle-admin-search-proset pel ket "/admin-abs-dp-excelB" ""))
   (POST "/admin-abs-dp-excelB" [kode]
         (teacher/teacher-abs-dp kode "teacher/hasil-abs-dp-excel.html"))
 
   (GET "/admin-adk-excelB" []
-       (admin-search-proset "/admin-adk-excelB-search"))
+       (admin-search-proset "/admin-adk-excelB-search" ""))
   (POST "/admin-adk-excelB-search" [pel ket]
-       (handle-admin-search-proset pel ket "/admin-adk-excelB"))
+       (handle-admin-search-proset pel ket "/admin-adk-excelB" ""))
   (POST "/admin-adk-excelB" [kode]
         (teacher/teacher-dayakecoh kode "teacher/hasil-adk-excel.html"))
 
@@ -702,7 +706,7 @@
   (GET "/admin-search-proset" []
        (admin-search-proset "/admin-search-proset1"))
   (POST "/admin-search-proset1" [pel ket]
-        (handle-admin-search-proset pel ket "/admin-edit-proset"))
+        (handle-admin-search-proset pel ket "/admin-edit-proset" ""))
   (POST "/admin-edit-proset" [kode]
         (admin-edit-proset kode))
   (POST "/admin-update-proset" [kode pel ket jsoal waktu jumpil skala nbenar nsalah acak status]
@@ -711,7 +715,7 @@
   (GET "/admin-upload-file" []
        (admin-search-proset "/admin-pilih-proset1"))
   (POST "/admin-pilih-proset1" [pel ket]
-       (handle-admin-search-proset pel ket "/admin-upload-file1"))
+       (handle-admin-search-proset pel ket "/admin-upload-file1" ""))
   (POST "/admin-upload-file1" [kode pel]
         (admin-upload-file (subs kode 1 (count kode)) pel))
   (POST "/admin-upload" [pel kode file]
@@ -720,7 +724,7 @@
   (GET "/admin-edit-kunci" []
        (admin-search-proset "/admin-edit-kunci-search"))
   (POST "/admin-edit-kunci-search" [pel ket]
-      (handle-admin-search-proset pel ket "/admin-edit-kunci1"))
+      (handle-admin-search-proset pel ket "/admin-edit-kunci1" ""))
   (POST "/admin-edit-kunci1" [kode]
         (admin-edit-kunci (subs kode 1 (count kode)) "/admin-save-kunci"))
   (POST "/admin-save-kunci" [kunci jenis upto pretext sound kode]
@@ -729,21 +733,21 @@
   (GET "/admin-lihat-soal" []
        (admin-search-proset "/admin-lihat-soal-search"))
   (POST "/admin-lihat-soal-search" [pel ket]
-      (handle-admin-search-proset pel ket "/admin-lihat-soal1"))
+      (handle-admin-search-proset pel ket "/admin-lihat-soal1" ""))
   (POST "/admin-lihat-soal1" [pel kode]
         (admin-view-soal pel (subs kode 1 (count kode))))
 
   (GET "/admin-lihat-sekaligus" []
        (admin-search-proset "/admin-lihat-sekaligus-search"))
   (POST "/admin-lihat-sekaligus-search" [pel ket]
-      (handle-admin-search-proset pel ket "/admin-lihat-sekaligus1"))
+      (handle-admin-search-proset pel ket "/admin-lihat-sekaligus1" "_blank"))
   (POST "/admin-lihat-sekaligus1" [pel kode]
         (admin-lihat-sekaligus pel kode))
 
   (GET "/admin-hapus-set" []
        (admin-search-proset "/admin-hapus-set-search"))
   (POST "/admin-hapus-set-search" [pel ket]
-      (handle-admin-search-proset pel ket "/admin-confirm-hapus"))
+      (handle-admin-search-proset pel ket "/admin-confirm-hapus" ""))
   (POST "/admin-confirm-hapus" [kode pel ket]
         (admin-confirm-hapus kode pel ket))
   (POST "/admin-confirm-fback" [kode pel ket yn]

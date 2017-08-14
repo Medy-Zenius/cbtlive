@@ -8,6 +8,7 @@
             document.pf.kelas.value=document.getElementById('kelas').value;
             document.pf.email.value=document.getElementById('email').value;
             document.pf.pass.value=document.getElementById('pass').value;
+            document.pf.passortu.value=document.getElementById('passortu').value;
             document.getElementById("pf").submit();
         }
   function hapus(){
@@ -84,6 +85,17 @@
      <div class="col-sm-5"></div>
   </div>
   <div class="row">
+     <div class="col-sm-2">
+        <h5 class="text-right">PassOrtu:</h5>
+     </div>
+     <div class="col-sm-5">
+        <div class="form-group">
+          <input type="text" class="form-control" id="passortu" value="{{datum.passortu}}">
+        </div>
+     </div>
+     <div class="col-sm-5"></div>
+  </div>
+  <div class="row">
     <div class="col-sm-2 text-right"></div>
     <div class="col-sm-3">
       <button class="btn btn-primary" type="submit" onClick="update()">
@@ -104,6 +116,7 @@
     <input type="hidden" name="kelas">
     <input type="hidden" name="email">
     <input type="hidden" name="pass">
+    <input type="hidden" name="passortu">
     <input type="hidden" name="nislama" value="{{datum.nis}}">
 </form>
 <form method="POST" action="/delete-data-siswa" name="pf1" id="pf1">

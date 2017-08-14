@@ -11,27 +11,11 @@
         border-style: none;
       }
     </style>
-    <script>
 
-        function convert(nilai){
-           var snilai="";
-           var lnilai=nilai.length;
-           if (lnilai <= 2){
-               snilai=nilai+",00";
-           }else{
-             if (lnilai == 3){
-                snilai = nilai.substring(0,1)+","+nilai.substring(2,3)+"0";
-             }else{
-                snilai = nilai.substring(0,1)+","+nilai.substring(2,(nilai.length));
-             }
-           }
-           return snilai;
-        }
-    </script>
     <div class="panel panel-info">
     <div class="panel-heading">
       <h2 class="text-center">
-      Selamat Datang {{nama}} !
+      {{salam}} {{nama}} !
       </h2>
     </div>
     </div>
@@ -47,7 +31,7 @@
         <tr>
             <td><script>document.write('{{datum.tanggal}}'.substring(0,10))</script></td>
             <td><input type="submit" class="bsubmit" name="kode" value="{{datum.kode}}" /></td>
-            <td><script>document.write(convert('{{datum.nilai}}'))</script></td>
+            <td>{{datum.nilai}}</script></td>
         </tr>
         {% endfor %}
     </table>

@@ -8,6 +8,7 @@
             [icbl.routes.home :refer [home-routes]]
             [icbl.routes.teacher :refer [teacher-routes]]
             [icbl.routes.admin :refer [admin-routes]]
+            [icbl.routes.ortu :refer [ortu-routes]]
             [icbl.routes.maintenance :refer [maintenance-routes]]
             ))
 
@@ -25,6 +26,7 @@
        [home-routes
         teacher-routes
         admin-routes
+        ortu-routes
         maintenance-routes
         app-routes
         ]))

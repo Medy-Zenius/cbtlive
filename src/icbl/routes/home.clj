@@ -9,6 +9,10 @@
             [icbl.models.share :as share]
             ))
 
+(defn home-num-to-str [number dk]
+  (-> (format (str "%." dk "f") (* number 1.0))
+      (clojure.string/replace #"\." ",")))
+
 (defn handle-login [nis pass]
   (let [user (db/get-data (str "select nis,password,nama from users where nis='" nis "'") 1)
         ip (:ipnumber (db/get-data "select ipnumber from ip where no=1" 1))
@@ -21,9 +25,10 @@
              (session/put! :ip ip)
              (layout/render "home/home.html"))
            (layout/render "share/login.html"
-                          {:error "Password Salah!" :nis nis}))
+                          {:error "Password Salah!" :nis nis :action "/home-login"}))
          (layout/render "share/login.html"
-                          {:error "Tidak ada user dengan NIS tersebut!"}))
+                          {:error "Tidak ada user dengan NIS tersebut!"
+                           :nis nis :action "/home-login"}))
     ))
 
 (defn acak-soal
@@ -127,7 +132,7 @@
            )))
 
 (defn home-login []
-  (layout/render "share/login.html"))
+  (layout/render "share/login.html" {:action "/home-login"}))
 
 (defn home []
   (layout/render "home/home.html"))
@@ -179,10 +184,11 @@
                   (layout/render "home/ganti-pw.html" {:error "Gagal ganti password!"})))
           (layout/render "home/ganti-pw.html" {:error "Password tidak sesuai!"})))))
 
-(defn handle-lihat-hasil [nis]
+(defn handle-lihat-hasil [nis salam]
   (let [data (db/get-data
-               (str "select tanggal,kode,nilai from dataus where nis='" nis "' order by tanggal desc") 2)]
-    (layout/render "home/list-nilai.html" {:data data})))
+               (str "select tanggal,kode,nilai from dataus where nis='" nis "' order by tanggal desc") 2)
+        data1 (map #(update-in %1 [:nilai] home-num-to-str 2) data)]
+    (layout/render "home/list-nilai.html" {:salam salam :data data1})))
 
 (defn handle-detail-set [kode nis]
   (let [pre (subs kode 0 1)
@@ -194,6 +200,27 @@
                                 and nis='" nis "'") 1)]
     (layout/render "home/detail-set.html" {:ket ket :nilai nilai})))
 
+(defn home-view-soal [kodesoal kodebahas]
+  (let [prekode (subs kodesoal 0 1)
+        postkode (subs kodesoal 1 (count kodesoal))
+        tabel (if (= "L" prekode) "proset" "bankproset")
+        html (if (= "L" prekode) "home/view-soal.html" "home/view-soalB.html")
+        datum (db/get-data (str "select * from " tabel " where kode='" postkode "'") 1)]
+       (layout/render html {:datum datum
+                                             :kategori "1"
+                                             :nsoal (vec (range 1 (inc (datum :jsoal))))
+                                             :npretext (if (datum :pretext) (read-string (datum :pretext)) nil)
+                                             :nsound (if (datum :sound) (read-string (datum :sound)) nil)
+                                             :kode kodebahas
+                                             })))
+
+(defn home-kodebahas [kodebahas]
+  (let [kodesoal (db/get-data
+                (str "select kodesoal from sesibahas where nomer='" kodebahas "'") 1)]
+    (if kodesoal
+      (home-view-soal (:kodesoal kodesoal) kodebahas)
+      (layout/render "home/nomer.html" {:kodebahas kodebahas :error "Tidak ada kode pembahasan tersebut!"}))))
+
 (defroutes home-routes
   (GET "/" [] (home-login))
   (GET "/home" []
@@ -201,18 +228,23 @@
   (POST "/home-login" [nis pass]
        (handle-login nis pass))
 
+  (POST "/home-logout" []
+        (share/logout "/"))
+
   (GET "/registrasi-siswa" []
        (home-registrasi-siswa))
   (POST "/registrasi-siswa" [nis nama kelas email pass1 pass2]
         (handle-reg-siswa nis nama kelas email pass1 pass2))
 
-  (GET "/home-logout" []
-       (share/logout "/"))
-
   (POST "/home-no-lstore" []
         (layout/render "home/kode1p.html"))
   (POST "/home-input-kode" []
         (layout/render "home/kode1.html"))
+
+  (POST "/home-input-nomer" []
+        (layout/render "home/nomer.html"))
+  (POST "/home-kodebahas" [kodebahas]
+        (home-kodebahas kodebahas))
 
   (POST "/home-ganti-pw" []
         (layout/render "home/ganti-pw.html"))
@@ -220,7 +252,7 @@
         (home-ganti-pw-siswa pwlama pwbaru1 pwbaru2))
 
   (POST "/home-lihat-hasil" []
-        (handle-lihat-hasil (session/get :id)))
+        (handle-lihat-hasil (session/get :id) "Selamat Datang "))
 
   (POST "/home-detail-set" [kode]
         (handle-detail-set kode (session/get :id)))

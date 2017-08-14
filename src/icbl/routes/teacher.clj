@@ -140,10 +140,10 @@
                )]
     (layout/render "teacher/pilih-proset.html" {:data data :action act :kset ks})))
 
-(defn teacher-pilih-proset-sekaligus [id act]
+(defn teacher-pilih-proset-sekaligus [id act target]
   (let [data (db/get-data (str "select * from proset where id='" id "' order by kode desc") 2)]
     (layout/render "teacher/pilih-proset-sekaligus.html" {:data data :action act
-                                                          :target "_blank"
+                                                          :target target
                                                           :kset "L"})))
 
 (defn teacher-upload-file [kode id]
@@ -397,12 +397,14 @@
                              :jumpil jumpil
                              :hasil vhasil})))
 
-(defn teacher-view-soal [kode]
-  (let [postkode (subs kode 1 (count kode))
-        datum (db/get-data (str "select * from proset where kode='" postkode "'") 1)]
-    (layout/render "teacher/view-soal.html" {:datum datum
+(defn teacher-view-soal [kode html]
+  (let [prekode (subs kode 0 1)
+        postkode (subs kode 1 (count kode))
+        tabel (if (= prekode "B") "bankproset" "proset")
+        datum (db/get-data (str "select * from " tabel " where kode='" postkode "'") 1)]
+    (layout/render html {:datum datum
                                              :nsoal (vec (range 1 (inc (datum :jsoal))))
-                                             ;:kategori "1"
+                                             :kategori "1"
                                              :npretext (if (datum :pretext) (read-string (datum :pretext)) nil)
                                              :nsound (if (datum :sound) (read-string (datum :sound)) nil)
                                              :kode kode
@@ -541,7 +543,8 @@
         data (db/get-data (str "select kode,pelajaran,keterangan,jsoal,waktu,status from bankproset where
                                pelajaran='" pel "' and upper(keterangan) LIKE '%" Uket "%'
                                order by keterangan") 2)]
-    (layout/render "admin/list-proset.html" {:data data :action act :pel pel :ket ket})))
+    (layout/render "admin/list-proset.html" {:data data :action act :pel pel :ket ket
+                                             :target "_blank"})))
 
 (defn handle-teacher-lihat-soal-bp [pel kode]
   (let [postkode (subs kode 1 (count kode))
@@ -610,6 +613,21 @@
   (do
     (spit (str "resources/public/proset/" id "/" (subs kd 1 (count kd)) "/" nf) soal)
     (layout/render "teacher/bikin-soal-html.html" {:kode kd})))
+
+(defn teacher-simpan-kode [kode act]
+  (try
+    (db/insert-data "sesibahas" {:kodesoal kode :id (session/get :id)})
+    (let [kodebahas (:nomer (db/get-data
+                                (str "select nomer from sesibahas where kodesoal='" kode "'") 1))]
+    (layout/render "teacher/kode-bahas.html" {:kode kode :kodebahas kodebahas :action act}))
+    ;(layout/render "teacher/kode-bahas.html" {:kode kode :kodebahas "12"})
+    (catch Exception ex
+      (layout/render "teacher/pesan.html" {:pesan str "Gagal membuat kode pembahasan, error:" ex}))))
+
+(defn teacher-selesai-bahas [id]
+  (do
+    (db/delete-data "sesibahas" (str "id='" id "'"))
+    (layout/render "teacher/pesan.html" {:pesan "Selesai Bahas Soal!"})))
 
 (defroutes teacher-routes
   (GET "/teacher" []
@@ -733,7 +751,7 @@
   (GET "/teacher-lihat-soal" []
        (teacher-pilih-proset "L" (session/get :id) "/teacher-view-soal"))
   (POST "/teacher-view-soal" [kode]
-        (teacher-view-soal kode))
+        (teacher-view-soal kode "teacher/view-soal.html"))
 
   (GET "/teacher-rekap-test" []
        (layout/render "teacher/write-subjek.html"))
@@ -767,7 +785,7 @@
         (teacher-rekap-siswa nis kode))
 
   (GET "/teacher-lihat-sekaligus" []
-       (teacher-pilih-proset-sekaligus (session/get :id) "/teacher-lihat-sekaligus"))
+       (teacher-pilih-proset-sekaligus (session/get :id) "/teacher-lihat-sekaligus" "_blank"))
   (POST "/teacher-lihat-sekaligus" [kode]
         (teacher-lihat-sekaligus kode))
 
@@ -799,5 +817,20 @@
         (handle-teacher-bikin-soal kode))
   (POST "/teacher-simpan-soal-html" [soal namafile kode]
         (handle-teacher-simpan-soal-html soal namafile kode (session/get :id)))
+
+  (GET "/teacher-bahas-sss" []
+       (teacher-pilih-proset-sekaligus (session/get :id) "/teacher-simpan-kode" ""))
+  (POST "/teacher-simpan-kode" [kode]
+        (teacher-simpan-kode kode "/teacher-bahas-set"))
+  (POST "/teacher-bahas-set" [kode kodebahas]
+        (teacher-view-soal kode "teacher/view-soal.html"))
+  (GET "/teacher-selesai-bahas" []
+       (teacher-selesai-bahas (session/get :id)))
+  (GET "/teacher-bahas-cb" []
+       (teacher-pilih-proset "B" (session/get :id) "/teacher-simpan-kodeB"))
+  (POST "/teacher-simpan-kodeB" [kode]
+        (teacher-simpan-kode kode "/teacher-bahas-setB"))
+  (POST "/teacher-bahas-setB" [kode kodebahas]
+        (teacher-view-soal kode "admin/view-soal.html"))
 )
 
