@@ -9,7 +9,7 @@
 
 (def db
 {:subprotocol "postgresql"
-:subname "//localhost:5432/tosmp"
+:subname "//localhost:5432/izilearning"
 :user "tosmp"
 :password "tosmp2000"})
 

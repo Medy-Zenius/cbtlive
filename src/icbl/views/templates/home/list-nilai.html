@@ -25,12 +25,14 @@
         <tr>
           <td>Tanggal</td>
           <td>Kode Soal</td>
+          <td>Keterangan</td>
           <td>Nilai</td>
         </tr>
         {% for datum in data %}
         <tr>
-            <td><script>document.write('{{datum.tanggal}}'.substring(0,10))</script></td>
+            <td><script>document.write('{{datum.stanggal}}'.substring(0,10))</script></td>
             <td><input type="submit" class="bsubmit" name="kode" value="{{datum.kode}}" /></td>
+            <td>{{datum.keterangan}}</td>
             <td>{{datum.nilai}}</script></td>
         </tr>
         {% endfor %}

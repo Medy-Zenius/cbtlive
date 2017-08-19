@@ -186,7 +186,11 @@
 
 (defn handle-lihat-hasil [nis salam]
   (let [data (db/get-data
-               (str "select tanggal,kode,nilai from dataus where nis='" nis "' order by tanggal desc") 2)
+               (str
+                 ;"select tanggal,kode,nilai from dataus where nis='" nis "' order by tanggal desc"
+                 "select dataus.kode,nilai,to_char(tanggal,'DD-MM-YYYY') as stanggal,keterangan from dataus
+                  inner join bankproset on to_number (substring (dataus.kode,2,4),'999999')=bankproset.kode
+                  where nis='" nis "' order by keterangan,tanggal desc") 2)
         data1 (map #(update-in %1 [:nilai] home-num-to-str 2) data)]
     (layout/render "home/list-nilai.html" {:salam salam :data data1})))
 
