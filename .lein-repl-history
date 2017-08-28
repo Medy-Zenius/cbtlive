@@ -1,78 +1,3 @@
-(start-server)
-exit
-(start-server)
-(clojure.string/upper-case "Admf KKKa")
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-(subs "astaga" 0 1)
-(subs "astaga" 1 (count "astaga"))
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-ç
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
 exit
 (start-server)
 exit
@@ -464,6 +389,110 @@ exit
 (start-server "3002")
 exit
 (start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+sudo nginx
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+ls
+exit
+(slurp "Users/medysuharta/Documents/app_prod/pig.csv)
+(slurp "Users/medysuharta/Documents/app_prod/pig.csv")
+(slurp "/Users/medysuharta/Documents/app_prod/pig.csv")
+(slurp "data/smp4tangselkelas7.csv")
+(slurp "/data/smp4tangselkelas7.csv")
+(slurp "/Users/medysuharta/Documents/app_prod/pig.csv")
+exit
+(use 'icbl.models.updatedb)
+(insert-data-pig "Users/medysuharta/Documents/app_prod/pig.csv")
+(insert-data-pig "data/pig.csv")
+exit
+(insert-data-pig "data/pig.csv")
+(use 'icbl.models.updatedb)
+(insert-data-pig "data/pig.csv")
+(use 'icbl.models.updatedb reload)
+(use 'icbl.models.updatedb)
+(insert-data-pig "data/pig.csv")
+(reload 'icbl.models.updatedb)
+exit
+(use 'icbl.models.updatedb)
+(insert-data-pig "data/pig.csv")
+exit
+(test-input "data/pig.csv")
+(use 'icbl.models.updatedb)
+(test-input "data/pig.csv")
+(first (test-input "data/pig.csv"))
+(second (test-input "data/pig.csv"))
+exit
+(use 'icbl.models.updatedb)
+(test-input "data/pig.csv")
+(insert-data-pig "data/pig.csv")
+exit
+(use 'icbl.models.updatedb)
+(insert-data-pig "data/pig.csv")
+exit
+(use 'icbl.models.updatedb)
+(convert-nm)
+exit
+(use 'icbl.models.updatedb)
+(convert-nm)
+exit
+(use 'icbl.models.updatedb)
+(convert-nm)
 exit
 (start-server "3002")
 exit

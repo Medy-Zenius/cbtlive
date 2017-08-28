@@ -1,6 +1,7 @@
 (ns icbl.models.updatedb
     (:require [clojure.java.jdbc :as sql]
-              [icbl.models.db :as db]))
+              [icbl.models.db :as db]
+              [clojure.string :as st]))
 
 (def db1
 {:subprotocol "postgresql"
@@ -52,3 +53,41 @@
   (let [data (db/get-data (str "select jsoal,kode from bankproset") 2)]
     (doseq [x data] (db/update-data-1 "bankproset" ["kode=?" (:kode x)] {:pretext (str (vec (repeat (:jsoal x) "-")))
                                                                          :sound (str (vec (repeat (:jsoal x) "-")))}))))
+
+(defn insert-data-pig [file]
+  (let [data (slurp file)
+        sdata (st/split data #"\n")
+        vdata (map #(st/split % #",") (if (not (vector? sdata)) (st/split data #"\r") sdata))
+        ;coba (spit (str vdata) "coba.txt")
+        ]
+        (loop [i 1]
+          (if (= i (count vdata))
+            "selesai"
+            (do
+              (let [kodejur_ada (db/get-data (str "select kodejur from pg where kodejur='" ((nth vdata i) 1) "'") 1)]
+                (if (not kodejur_ada)
+                  (db/insert-data "pg" {:kelompok ((nth vdata i) 0)
+                                           :kodejur ((nth vdata i) 1)
+                                           :jurusan ((nth vdata i) 2)
+                                           :ptn ((nth vdata i) 3)
+                                           :kodeptn ((nth vdata i) 4)
+                                           :nilaimin ((nth vdata i) 5)
+
+                                           })))
+              (recur (inc i)))))))
+
+(defn test-input [file]
+  (let [data (slurp file)
+        sdata (st/split data #"\n")
+        vdata (map #(st/split % #",") (if (not (vector? sdata)) (st/split data #"\r") sdata))]
+    vdata))
+
+(defn convert-nm []
+  (let [data (db/get-data "select distinct nilaimin from pg1" 2)
+        cdata (count data)]
+    (loop [i 0]
+      (if (= i cdata)
+        "selesai"
+        (do
+          (db/update-data-1 "pg1" ["nilaimin=?" (:nilaimin (nth data i))] {:nm (read-string (:nilaimin (nth data i)))})
+          (recur (inc i)))))))

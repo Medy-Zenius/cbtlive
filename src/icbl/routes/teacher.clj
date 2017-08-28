@@ -243,7 +243,7 @@
         postkode (subs kode 1 (count kode))
         tdata (if (= prekode "B") "bankproset" "proset")
         id (if (= prekode "B")
-           (:pelajaran (db/get-data (str "select pelajaran from bankproset where kode='" postkode "'") 1))
+           (:kodepel (db/get-data (str "select kodepel from bankproset where kode='" postkode "'") 1))
            (:id (db/get-data (str "select id from proset where kode='" postkode "'") 1)))]
     (layout/render "teacher/lihat-soal.html" {:id id :kode kode :nomer nomer
                                               :postkode postkode :tabel tdata})))
@@ -264,7 +264,12 @@
   (let [prekode (subs kode 0 1)
         postkode (subs kode 1 (count kode))
         tdata (if (= prekode "B") "bankproset" "proset")
-        pkt (db/get-data (str "select kode,pelajaran,keterangan from " tdata " where kode='" postkode "'") 1)
+        ;pkt (db/get-data (str "select kode,pelajaran,keterangan from " tdata " where kode='" postkode "'") 1)
+        pkt (if (= prekode "B")
+              (db/get-data (str "select kode,pelajaranbs.pelajaran as pelajaran,keterangan from bankproset
+                                inner join pelajaranbs on bankproset.kodepel=pelajaranbs.nomer
+                                where kode='" postkode "'") 1)
+              (db/get-data (str "select kode,pelajaran,keterangan from proset where kode='" postkode "'") 1))
         data (db/get-data (str "select jawaban as jw from dataus where kode='" kode "'") 2)
         kunci (:kunci (db/get-data (str "select kunci from " tdata " where kode='" postkode "'") 1))
 
@@ -284,7 +289,12 @@
   (let [prekode (subs kode 0 1)
         postkode (subs kode 1 (count kode))
         tdata (if (= prekode "B") "bankproset" "proset")
-        pkt (db/get-data (str "select kode,pelajaran,keterangan,kunci from " tdata " where kode='" postkode "'") 1)
+        ;pkt (db/get-data (str "select kode,pelajaran,keterangan,kunci from " tdata " where kode='" postkode "'") 1)
+        pkt (if (= prekode "B")
+              (db/get-data (str "select kode,pelajaranbs.pelajaran as pelajaran,keterangan,kunci from bankproset
+                                inner join pelajaranbs on bankproset.kodepel=pelajaranbs.nomer
+                                where kode='" postkode "'") 1)
+              (db/get-data (str "select kode,pelajaran,keterangan,kunci from proset where kode='" postkode "'") 1))
         kunci (pkt :kunci)
         ;;;Analisis Tingkat Kesulitan
         datatk (db/get-data (str "select jawaban as jwtk, nilai from dataus
@@ -314,7 +324,12 @@
   (let [prekode (subs kode 0 1)
         postkode (subs kode 1 (count kode))
         tdata (if (= prekode "B") "bankproset" "proset")
-        pkt (db/get-data (str "select kode,pelajaran,keterangan,kunci from " tdata " where kode='" postkode "'") 1)
+        ;pkt (db/get-data (str "select kode,pelajaran,keterangan,kunci from " tdata " where kode='" postkode "'") 1)
+        pkt (if (= prekode "B")
+              (db/get-data (str "select kode,pelajaranbs.pelajaran as pelajaran,keterangan,kunci from bankproset
+                                inner join pelajaranbs on bankproset.kodepel=pelajaranbs.nomer
+                                where kode='" postkode "'") 1)
+              (db/get-data (str "select kode,pelajaran,keterangan,kunci from proset where kode='" postkode "'") 1))
         kunci (pkt :kunci)
         ;;;Analisis Daya Pemisah
         datatk (db/get-data (str "select jawaban as jwtk, nilai from dataus
@@ -379,7 +394,12 @@
   (let [prekode (subs kode 0 1)
         postkode (subs kode 1 (count kode))
         tdata (if (= prekode "B") "bankproset" "proset")
-        pkt (db/get-data (str "select kode,pelajaran,keterangan,kunci,jumpil from " tdata " where kode='" postkode "'") 1)
+        ;pkt (db/get-data (str "select kode,pelajaran,keterangan,kunci,jumpil from " tdata " where kode='" postkode "'") 1)
+        pkt (if (= prekode "B")
+              (db/get-data (str "select kode,pelajaranbs.pelajaran as pelajaran,keterangan,kunci,jumpil from bankproset
+                                inner join pelajaranbs on bankproset.kodepel=pelajaranbs.nomer
+                                where kode='" postkode "'") 1)
+              (db/get-data (str "select kode,pelajaran,keterangan,kunci,jumpil from proset where kode='" postkode "'") 1))
         data (db/get-data (str "select jawaban as jw from dataus where kode='" kode "'") 2)
         ;kunci (:kunci (db/get-data (str "select kunci from " tdata " where kode='" postkode "'") 1))
         kunci (pkt :kunci)
@@ -538,12 +558,13 @@
                                                :dsiswa data2
                                                :ntotal (/ (Math/round (* 100 ntotal)) 100.0)})))
 
-(defn handle-teacher-search-proset [pel ket act]
+(defn handle-teacher-search-proset [nopel ket act]
   (let [Uket (clojure.string/upper-case ket)
-        data (db/get-data (str "select kode,pelajaran,keterangan,jsoal,waktu,status from bankproset where
-                               pelajaran='" pel "' and upper(keterangan) LIKE '%" Uket "%'
+        data (db/get-data (str "select kode,pelajaranbs.pelajaran as pelajaran,keterangan,jsoal,waktu,status from bankproset
+                               inner join pelajaranbs on bankproset.kodepel=pelajaranbs.nomer where
+                               kodepel='" nopel "' and upper(keterangan) LIKE '%" Uket "%'
                                order by keterangan") 2)]
-    (layout/render "admin/list-proset.html" {:data data :action act :pel pel :ket ket
+    (layout/render "admin/list-proset.html" {:data data :action act :kodepel nopel :ket ket
                                              :target "_blank"})))
 
 (defn handle-teacher-lihat-soal-bp [pel kode]
@@ -791,10 +812,10 @@
 
   (GET "/teacher-lihat-bp" []
        (teacher-search-proset-bp "/teacher-search-proset"))
-  (POST "/teacher-search-proset" [pel ket]
-      (handle-teacher-search-proset pel ket "/teacher-lihat-soal-bp"))
-  (POST "/teacher-lihat-soal-bp" [pel kode]
-        (handle-teacher-lihat-soal-bp pel kode))
+  (POST "/teacher-search-proset" [nopel ket]
+      (handle-teacher-search-proset nopel ket "/teacher-lihat-soal-bp"))
+  (POST "/teacher-lihat-soal-bp" [nopel kode]
+        (handle-teacher-lihat-soal-bp nopel kode))
 
   (GET "/teacher-catat-bp" []
       (layout/render "teacher/catat-bp.html"))

@@ -48,7 +48,9 @@
         g (concat c1 (shuffle f))
         h (partition 5 (flatten g))
         ]
-    h))
+    ;(println b)
+    h
+    ))
 
 (defn handle-kodeto1 [kodeto]
   (let [pre (subs kodeto 0 1)
@@ -63,9 +65,9 @@
            (let [jsoal (data :jsoal)
                  vjaw (partition 5 (interleave (range 1 (inc jsoal)) (data :jenis) (data :upto)
                                                (if (data :pretext) (read-string (data :pretext)) (repeat jsoal "-"))
-                                               (if (data :pretext) (read-string (data :sound)) (repeat jsoal "-"))))
+                                               (if (data :sound) (read-string (data :sound)) (repeat jsoal "-"))))
                  ;vjaw-acak vjaw
-                 vjaw1 (if (= "1" (data :acak)) (acak-soal vjaw) vjaw)
+                 vjaw1 (if (= "1" (data :acak)) (shuffle vjaw) vjaw)
                  nsoal (vec (map #(first %) vjaw1))
                  njenis (vec (map #(second %) vjaw1))
                  nupto (apply str (map #(str (nth % 2)) vjaw1))
@@ -74,7 +76,7 @@
                  ;;page (if (= pre "B") "home/tryoutB.html" "home/tryout.html")
                  page "home/tryout.html"
                  ]
-                ;(println nupto)
+                ;(println vjaw)
                 (layout/render page {:data data
                                      :nsoal nsoal
                                      :njenis njenis
@@ -231,6 +233,9 @@
        (home))
   (POST "/home-login" [nis pass]
        (handle-login nis pass))
+
+  (GET "/home-logout" []
+       (share/logout "/"))
 
   (POST "/home-logout" []
         (share/logout "/"))

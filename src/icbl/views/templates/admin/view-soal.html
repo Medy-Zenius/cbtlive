@@ -103,7 +103,7 @@
 
      function get_soal1(urla) {
         if (npt[no-1] != "-"){
-          urla_pretext = path + '/bankproset/'+ '{{datum.pelajaran}}' + '/' + {{datum.kode}} + '/' + npt[no-1] + '.png';
+          urla_pretext = path + '/bankproset/'+ '{{datum.kodepel}}' + '/' + {{datum.kode}} + '/' + npt[no-1] + '.png';
           //urla_pretext = path + '/' + {{datum.kode}} + '/' + npt[no-1] + '.png';
           document.getElementById("pretext").innerHTML='<div><img src='+urla_pretext+'></div>';
         }else{
@@ -111,7 +111,7 @@
         }
         // Sound atawa Suara
         if (nsou[no-1] != "-"){
-          urla_sound = path + '/bankproset/'+ '{{datum.pelajaran}}' + '/' + {{datum.kode}} + '/' + nsou[no-1];
+          urla_sound = path + '/bankproset/'+ '{{datum.kodepel}}' + '/' + {{datum.kode}} + '/' + nsou[no-1];
           document.getElementById("sound").innerHTML='<div><audio src='+urla_sound+' controls></div>';
         }else{
           document.getElementById("sound").innerHTML='<div></div>';
@@ -125,7 +125,7 @@
       if (no>1){
         no-=1;vno=no-1;
         if (vkat == "1"){
-          get_soal1(path + '/bankproset/'+ '{{datum.pelajaran}}' + '/' + {{datum.kode}} + '/' + ns[vno] + '.png');
+          get_soal1(path + '/bankproset/'+ '{{datum.kodepel}}' + '/' + {{datum.kode}} + '/' + ns[vno] + '.png');
         }else{
           get_soal('/soal/'+kode+'/'+ns[vno]+'.html');
         }
@@ -138,7 +138,7 @@
       if (no<jsoal){
         no+=1;vno=no-1;
         if (vkat == "1"){
-          get_soal1(path + '/bankproset/'+ '{{datum.pelajaran}}' + '/' + {{datum.kode}} + '/' + ns[vno] + '.png');
+          get_soal1(path + '/bankproset/'+ '{{datum.kodepel}}' + '/' + {{datum.kode}} + '/' + ns[vno] + '.png');
         }else{
           get_soal('/soal/'+kode+'/'+ns[vno]+'.html');
         }
@@ -150,7 +150,7 @@
         var vno=document.getElementById("selno").value;
         no=parseInt(vno)+1;
         if (vkat == "1"){
-          get_soal1(path + '/bankproset/'+ '{{datum.pelajaran}}' + '/' + {{datum.kode}} + '/' + ns[no-1] + '.png');
+          get_soal1(path + '/bankproset/'+ '{{datum.kodepel}}' + '/' + {{datum.kode}} + '/' + ns[no-1] + '.png');
         }else{
           get_soal('/soal/'+kode+'/'+ns[no-1]+'.html');
         }
@@ -164,7 +164,7 @@
 
 
    <h4 align="center" id="title">UJIAN SEKOLAH - {{user}}</h4>
-   <h4 align="center">Kode Soal: {{kode}} - {{datum.pelajaran}} - {{datum.keterangan}}</h4>
+   <h4 align="center">Kode Soal: {{datum.kode}} - {{datum.keterangan}}</h4>
    <div class="row">
     <div class="col-sm-2">
      <select class="form-control" id="selno" onchange="ganti_nomer()">
@@ -192,7 +192,7 @@
 
 <script>
     if (vkat == "1") {
-      get_soal1(path + '/bankproset/'+ '{{datum.pelajaran}}' + '/' + {{datum.kode}} + '/' + ns[0] + '.png');
+      get_soal1(path + '/bankproset/'+ '{{datum.kodepel}}' + '/' + {{datum.kode}} + '/' + ns[0] + '.png');
     } else {
       get_soal('/soal/'+kode+'/'+ns[0]+'.html');
     }

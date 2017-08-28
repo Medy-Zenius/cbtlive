@@ -9,9 +9,9 @@
          </div>
          <div class="col-sm-3">
            <div class="form-group">
-              <select id="pel" name="pel">
+              <select id="pel" name="nopel">
                 {% for datum in data %}
-                <option value="{{datum.pelajaran}}">{{datum.pelajaran}}</option>
+                <option value="{{datum.nomer}}">{{datum.pelajaran}}</option>
                 {% endfor %}
              </select>
            </div>
