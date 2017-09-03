@@ -142,27 +142,28 @@
           (layout/render "adminmagang/pesan.html" {:pesan "Gagal mengubah password admin magang!"})))))
 
 (defn adminmagang-buat-proset [nopel ket jsoal waktu jumpil]
-  (try
-      (db/insert-data "magangproset"
-                               {:id (session/get :id)
-                                :kodepel (read-string nopel)
-                                :keterangan ket
-                                :jsoal (Integer/parseInt jsoal)
-                                :waktu (Integer/parseInt waktu)
-                                :kunci (str (vec (repeat (Integer/parseInt jsoal) "-")))
-                                :jenis (str (vec (repeat (Integer/parseInt jsoal) "1")))
-                                :upto (str (vec (repeat (Integer/parseInt jsoal) jumpil)))
-                                ;:pretext (str (vec (repeat (Integer/parseInt jsoal) "-")))
-                                ;:sound (str (vec (repeat (Integer/parseInt jsoal) "-")))
-                                :jumpil jumpil
-                                :acak "0"
-                                :status "0"
-                                :skala 100
-                                :nbenar 1
-                                :nsalah 0})
-      (layout/render "adminmagang/pesan.html" {:pesan (str "Berhasil daftarkan proset!")})
-      (catch Exception ex
-                  (layout/render "adminmagang/pesan.html" {:pesan (str "Gagal daftarkan proset! error: " ex)}))))
+  (let [vjenis (if (= "0" jumpil) "2" "1")]
+    (try
+        (db/insert-data "magangproset"
+                                 {:id (session/get :id)
+                                  :kodepel (read-string nopel)
+                                  :keterangan ket
+                                  :jsoal (Integer/parseInt jsoal)
+                                  :waktu (Integer/parseInt waktu)
+                                  :kunci (str (vec (repeat (Integer/parseInt jsoal) "-")))
+                                  :jenis (str (vec (repeat (Integer/parseInt jsoal) vjenis)))
+                                  :upto (str (vec (repeat (Integer/parseInt jsoal) jumpil)))
+                                  ;:pretext (str (vec (repeat (Integer/parseInt jsoal) "-")))
+                                  ;:sound (str (vec (repeat (Integer/parseInt jsoal) "-")))
+                                  :jumpil jumpil
+                                  :acak "0"
+                                  :status "0"
+                                  :skala 100
+                                  :nbenar 1
+                                  :nsalah 0})
+        (layout/render "adminmagang/pesan.html" {:pesan (str "Berhasil daftarkan proset!")})
+        (catch Exception ex
+                    (layout/render "adminmagang/pesan.html" {:pesan (str "Gagal daftarkan proset! error: " ex)})))))
 
 (defn handle-adminmagang-search-proset [nopel ket act target]
   (let [Uket (clojure.string/upper-case ket)
