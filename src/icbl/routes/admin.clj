@@ -83,7 +83,7 @@
     (if (or (not= pwlama pwnow) (< (count pwbaru) 5))
         (layout/render "admin/pesan.html" {:pesan "Password Lama tidak benar atau password baru kurang dari lima huruf!"})
         (if (= pwbaru pwbaru1)
-          (try (spit "data/pw.txt" pwbaru)
+          (try (db/update-data-1 "admin" ["id=?" "admin"] {:pass pwbaru})
                  (layout/render "admin/pesan.html" {:pesan "Berhasil mengubah password admin!"})
                (catch Exception ex
                   (layout/render "admin/pesan.html" {:pesan "Gagal mengubah data password admin!"})))
@@ -326,16 +326,16 @@
   (let [data (db/get-data "select * from pelajaranbs order by pelajaran" 2)]
     (layout/render "admin/search-proset.html" {:act act :data data})))
 
-(defn admin-confirm-hapus [kode pel ket]
+(defn admin-confirm-hapus [kode ket]
   (let [vkode (subs kode 1 (count kode))
-        proset (db/get-data (str "select kode,pelajaran,keterangan from bankproset where kode='" vkode "'") 1)]
+        proset (db/get-data (str "select kode,keterangan from bankproset where kode='" vkode "'") 1)]
     (layout/render "admin/confirm-hapus.html" {:kode kode
-                                               :pelajaran (proset :pelajaran)
+                                               ;:pelajaran (proset :pelajaran)
                                                :keterangan (proset :keterangan)
-                                               :pel pel
+                                               ;:pel pel
                                                :ket ket})))
 
-(defn admin-hapus-set [pel ket kode]
+(defn admin-hapus-set [ket kode]
   (try
     (db/delete-data "bankproset" (str "kode='" kode "'"))
     (layout/render "admin/pesan.html" {:pesan (str "Set Soal dengan kode B" kode " berhasil dihapus!" )})
@@ -373,7 +373,7 @@
   (let [Upel (clojure.string/upper-case pel)
         data (db/get-data (str "select pelajaran from pelajaranbs where UPPER(pelajaran)='" Upel "'") 1)]
         (if data
-          (layout/render "admin/pesan.html" {:pesan (str "Kelas " Upel " sudah ada!")})
+          (layout/render "admin/pesan.html" {:pesan (str "Pelajaran " Upel " sudah ada!")})
           (try
             (db/insert-data "pelajaranbs" {:pelajaran Upel})
             (layout/render "admin/pesan.html" {:pesan (str "Berhasil menambah pelajaran dengan nama " Upel)})
@@ -749,12 +749,12 @@
        (admin-search-proset "/admin-hapus-set-search"))
   (POST "/admin-hapus-set-search" [nopel ket]
       (handle-admin-search-proset nopel ket "/admin-confirm-hapus" ""))
-  (POST "/admin-confirm-hapus" [kode pel ket]
-        (admin-confirm-hapus kode pel ket))
-  (POST "/admin-confirm-fback" [kode pel ket yn]
-        (if (= yn "Y") (admin-hapus-set pel ket (subs kode 1 (count kode))) (layout/render "admin/work.html")))
-  (POST "/admin-hapus-set1" [pel ket kode]
-        (admin-hapus-set pel ket (subs kode 1 (count kode))))
+  (POST "/admin-confirm-hapus" [kode ket]
+        (admin-confirm-hapus kode ket))
+  (POST "/admin-confirm-fback" [kode ket yn]
+        (if (= yn "Y") (admin-hapus-set ket (subs kode 1 (count kode))) (layout/render "admin/work.html")))
+  (POST "/admin-hapus-set1" [ket kode]
+        (admin-hapus-set ket (subs kode 1 (count kode))))
 
   (GET "/admin-input-siswa" []
        (layout/render "admin/input-siswa.html"))

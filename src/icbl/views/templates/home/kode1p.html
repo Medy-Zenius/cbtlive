@@ -50,6 +50,22 @@
       <div class="row">
         <div class="col-sm-3"></div>
         <div class="col-sm-6" align="center">
+          <button class="btn btn-success" onClick="kirim(5)">SIMULASI SBMPTN</button>
+        </div>
+        <div class="col-sm-3"></div>
+      </div>
+      <br>
+      <div class="row">
+        <div class="col-sm-3"></div>
+        <div class="col-sm-6" align="center">
+          <button class="btn btn-success" onClick="kirim(6)">SIMULASI PPDB SMA</button>
+        </div>
+        <div class="col-sm-3"></div>
+      </div>
+      <br>
+      <div class="row">
+        <div class="col-sm-3"></div>
+        <div class="col-sm-6" align="center">
           <button class="btn btn-warning" onClick="kirim(4)">IKUT PEMBAHASAN</button>
         </div>
         <div class="col-sm-3"></div>
@@ -62,6 +78,10 @@
   </form>
   <form method="POST" action="/home-lihat-hasil" name="pf3" id="pf3">
   </form>
+  <form method="POST" action="/home-sim-sbmptn" name="pf5" id="pf5">
+  </form>
   <form method="POST" action="/home-input-nomer" name="pf4" id="pf4">
+  </form>
+  <form method="POST" action="/home-sim-ppdb" name="pf6" id="pf6">
   </form>
 {% endblock %}

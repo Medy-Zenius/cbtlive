@@ -10,6 +10,8 @@
             [icbl.routes.admin :refer [admin-routes]]
             [icbl.routes.ortu :refer [ortu-routes]]
             [icbl.routes.maintenance :refer [maintenance-routes]]
+            [icbl.routes.tesmagang :refer [tesmagang-routes]]
+            [icbl.routes.adminmagang :refer [adminmagang-routes]]
             ))
 
 (defn init []
@@ -28,6 +30,8 @@
         admin-routes
         ortu-routes
         maintenance-routes
+        tesmagang-routes
+        adminmagang-routes
         app-routes
         ]))
 

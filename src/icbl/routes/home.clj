@@ -117,10 +117,10 @@
                                              :jawaban jawaban
                                              :nilai nilai
                                              :tanggal (java.sql.Timestamp. (.getTime (java.util.Date.)))})
-              {:nilai nilai}
+              {:nilai nilai :skala skala}
                ;{:nilai nil}
               (catch Exception ex
-                {:nilai nil}))
+                {:nilai nil :skala skala}))
              (try (db/update-data-1 "dataus"
                                     ["nis=? AND kode=?" nis vkd]
                                       {:nis nis
@@ -128,9 +128,9 @@
                                        :jawaban jawaban
                                        :nilai nilai
                                        :tanggal (java.sql.Timestamp. (.getTime (java.util.Date.)))})
-               {:nilai nilai}
+               {:nilai nilai :skala skala}
                (catch Exception ex
-                {:nilai nil}))
+                {:nilai nil :skala skala}))
            )))
 
 (defn home-login []
@@ -227,6 +227,122 @@
       (home-view-soal (:kodesoal kodesoal) kodebahas)
       (layout/render "home/nomer.html" {:kodebahas kodebahas :error "Tidak ada kode pembahasan tersebut!"}))))
 
+(defn home-pilih-paket []
+  (let [data (db/get-data "select kode,kodetkpa,kodeipaorips,keterangan from simsbmptn order by keterangan" 2)]
+    (layout/render "home/pilih-paket.html" {:data data})))
+
+(defn home-proses-paket [kode]
+  (let [paket (db/get-data (str "select * from simsbmptn where kode='" kode "'") 1)
+        kelompok (:kelompok paket)
+        kodetkpa (:kodetkpa paket)
+        kodeipaorips (:kodeipaorips paket)
+        nilaitkpa (db/get-data (str "select nilai from dataus where nis='" (session/get :id) "'
+                                    and kode='" kodetkpa "'") 1)
+        nilaiipaorips (db/get-data (str "select nilai from dataus where nis='" (session/get :id) "'
+                                       and kode='" kodeipaorips "'") 1)]
+    (if (and nilaitkpa nilaiipaorips)
+        (let [ntot (/ (+ (:nilai nilaitkpa) (:nilai nilaiipaorips)) 2.0)
+              univ (db/get-data (str "select distinct ptn from pg1 where nm <='" ntot "' and
+                                     kelompok='" kelompok "' order by ptn") 2)
+              funiv (if univ (:ptn (first univ)) "VOID")
+              jurusan (if univ
+                          (db/get-data (str "select kodejur,jurusan,nm from pg1 where ptn='" funiv "' and
+                                        nm<='" ntot "' and kelompok='" kelompok "' order by nm desc") 2)
+                          "VOID")]
+          (if univ
+            (layout/render "home/list-jurusan.html" {:ntot (format (str "%." 2 "f") (* ntot 1.0))
+                                                     :jurusan jurusan
+                                                     :univ univ
+                                                     :kelompok kelompok
+                                                     :sainsoshum (if (= kelompok "1") "SAINTEK" "SOSHUM")
+                                                     :ntkpa (format (str "%." 2 "f") (* (:nilai nilaitkpa) 1.0))
+                                                     :nipaorips (format (str "%." 2 "f") (* (:nilai nilaiipaorips) 1.0))
+                                                     :ptn funiv})
+            (layout/render "home/pesan.html" {:pesan "Nilai tidak memenuhi syarat di semua universitas!"})))
+         (layout/render "home/pesan.html" {:pesan "Nilai kamu tidak lengkap!"}))))
+
+(defn home-next-univ [ptn ntot ntkpa nipaorips kelompok]
+  (let [univ (db/get-data (str "select distinct ptn from pg1 where nm <='" ntot "' and
+                                     kelompok='" kelompok "' order by ptn") 2)
+        jurusan (db/get-data (str "select kodejur,jurusan,nm from pg1 where ptn='" ptn "' and
+                                        nm<='" ntot "' and kelompok='" kelompok "' order by nm desc") 2)]
+    (layout/render "home/list-jurusan.html" {:ntot ntot
+                                             :jurusan jurusan
+                                             :univ univ
+                                             :kelompok kelompok
+                                             :sainsoshum (if (= kelompok "1") "SAINTEK" "SOSHUM")
+                                             :ntkpa ntkpa
+                                             :nipaorips nipaorips
+                                             :ptn ptn})))
+
+(defn home-pilih-paket-ppdb []
+  (let [data (db/get-data "select kode,kodemat,kodeipa,kodeind,kodeing,keterangan from simppdb order by keterangan" 2)]
+    (layout/render "home/pilih-paket-ppdb.html" {:data data})))
+
+(defn home-proses-paket-ppdb [kode]
+  (let [paket (db/get-data (str "select * from simppdb where kode='" kode "'") 1)
+        kodemat (:kodemat paket)
+        kodeipa (:kodeipa paket)
+        kodeind (:kodeind paket)
+        kodeing (:kodeing paket)
+        nilaimat (db/get-data (str "select nilai from dataus where nis='" (session/get :id) "'
+                                    and kode='" kodemat "'") 1)
+        nilaiipa (db/get-data (str "select nilai from dataus where nis='" (session/get :id) "'
+                                       and kode='" kodeipa "'") 1)
+        nilaiind (db/get-data (str "select nilai from dataus where nis='" (session/get :id) "'
+                                       and kode='" kodeind "'") 1)
+        nilaiing (db/get-data (str "select nilai from dataus where nis='" (session/get :id) "'
+                                       and kode='" kodeing "'") 1)]
+    (if (and nilaimat nilaiipa nilaiind nilaiing)
+        (let [ntot (+ (:nilai nilaimat) (:nilai nilaiipa) (:nilai nilaiind) (:nilai nilaiing))
+              daerah (db/get-data (str "select distinct pgsma.kodedaerah as kode, daerah from pgsma
+                                     inner join kodedaerah on pgsma.kodedaerah=kodedaerah.kode
+                                     where nm <='" ntot "' order by daerah") 2)
+              fkode (if daerah (:kode (first daerah)) "VOID")
+              fdaerah (if daerah (:daerah (first daerah)) "VOID")
+              sekolah (if daerah
+                          (db/get-data (str "select sekolah,nm from pgsma where kodedaerah='" fkode "' and
+                                        nm<='" ntot "' order by nm desc") 2)
+                          "VOID")]
+          (if daerah
+            (layout/render "home/list-sma.html" {:ntot (format (str "%." 2 "f") (* ntot 1.0))
+                                                     :daerah daerah
+                                                     :sekolah sekolah
+                                                     :nmat (format (str "%." 2 "f") (* (:nilai nilaimat) 1.0))
+                                                     :nipa (format (str "%." 2 "f") (* (:nilai nilaiipa) 1.0))
+                                                     :nind (format (str "%." 2 "f") (* (:nilai nilaiind) 1.0))
+                                                     :ning (format (str "%." 2 "f") (* (:nilai nilaiing) 1.0))
+                                                     :wilayah fdaerah
+                                                     :kodedaerah fkode
+                                                     })
+            (layout/render "home/pesan.html" {:pesan "Nilai tidak memenuhi syarat di semua Daerah!"})))
+         (layout/render "home/pesan.html" {:pesan "Nilai kamu tidak lengkap!"}))))
+
+(defn home-next-daerah [kode ntot nmat nipa nind ning]
+  (let [daerah (db/get-data (str "select distinct pgsma.kodedaerah as kode, daerah from pgsma
+                                     inner join kodedaerah on pgsma.kodedaerah=kodedaerah.kode
+                                     where nm <='" ntot "' order by daerah") 2)
+        sekolah (db/get-data (str "select sekolah,nm from pgsma where kodedaerah='" kode "' and
+                                        nm<='" (read-string ntot) "' order by nm desc") 2)
+        wilayah (db/get-data (str "select daerah from kodedaerah where kode='" kode "'") 1)]
+    (layout/render "home/list-sma.html" {:ntot ntot
+                                          :daerah daerah
+                                             :sekolah sekolah
+                                             :nmat nmat
+                                             :nipa nipa
+                                             :nind nind
+                                             :ning ning
+                                             :wilayah (:daerah wilayah)
+                                             :kodedaerah kode})))
+
+(defn home-get-sekolah [kode ntot]
+  (db/get-data (str "select sekolah,nm from pgsma where kodedaerah='" kode "' and
+                                        nm<='" ntot "' order by nm desc") 2))
+
+(defn home-get-jurusan [ptn kelompok ntot]
+  (db/get-data (str "select kodejur,jurusan,nm from pg1 where ptn='" ptn "' and
+                                        nm<='" ntot "' and kelompok='" kelompok "' order by nm desc") 2))
+
 (defroutes home-routes
   (GET "/" [] (home-login))
   (GET "/home" []
@@ -278,8 +394,28 @@
   (POST "/home-tryout-baru" []
         (layout/render "home/kode1.html"))
 
+  (POST "/home-sim-sbmptn" []
+        (home-pilih-paket))
+  (POST "/home-proses-paket" [kode]
+        (home-proses-paket kode))
+  (POST "/home-next-univ" [ptn ntot ntkpa nipaorips kelompok]
+        (home-next-univ ptn (read-string ntot) ntkpa nipaorips kelompok))
+
+  (POST "/home-sim-ppdb" []
+        (home-pilih-paket-ppdb))
+  (POST "/home-proses-paket-ppdb" [kode]
+        (home-proses-paket-ppdb kode))
+  (POST "/home-next-daerah" [kode ntot nmat nipa nind ning]
+        (home-next-daerah kode ntot nmat nipa nind ning))
+
   (GET "/simpan/:kode/:jawaban/:nis" [kode jawaban nis]
        ;(println (str kode " " jawaban))
       (resp/json (handle-simpan-jawaban kode jawaban nis)))
+
+  (GET "/get-sekolah/:kode/:ntot" [kode ntot]
+       (resp/json (home-get-sekolah kode ntot)))
+
+  (GET "/get-jurusan/:ptn/:kelompok/:ntot" [ptn kelompok ntot]
+       (resp/json (home-get-jurusan ptn kelompok ntot)))
 
 )
