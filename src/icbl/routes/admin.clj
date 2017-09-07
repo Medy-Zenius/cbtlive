@@ -476,6 +476,83 @@
           (catch Exception ex
              (layout/render "admin/pesan.html" {:pesan "Gagal registrasi siswa!"}))))))
 
+(defn admin-tambah-paket-ppdb [ket mat ipa ind ing]
+  (try
+    (db/insert-data "simppdb" {:keterangan ket
+                               :kodemat mat
+                               :kodeipa ipa
+                               :kodeind ind
+                               :kodeing ing
+                                })
+    (layout/render "admin/pesan.html" {:pesan "Berhasil menambah paket ppdb!"})
+          (catch Exception ex
+             (layout/render "admin/pesan.html" {:pesan (str "Gagal menambah paket ppdb! error" ex)}))))
+
+(defn admin-list-paket-ppdb []
+  (let [data (db/get-data "select * from simppdb order by keterangan" 2)]
+       (layout/render "admin/list-paket-ppdb.html" {:data data})))
+
+(defn admin-edit-paket-ppdb [kode]
+  (let [datum (db/get-data (str "select * from simppdb where kode='" kode "'") 1)]
+    (layout/render "admin/edit-paket-ppdb.html" {:datum datum})))
+
+(defn admin-update-paket-ppdb [kode ket mat ipa ind ing]
+  (try (db/update-data-1 "simppdb"
+                              ["kode=?" (read-string kode)]
+                                      {:keterangan ket
+                                       :kodemat mat
+                                       :kodeipa ipa
+                                       :kodeind ind
+                                       :kodeing ing})
+               (layout/render "admin/pesan.html" {:pesan "Berhasil mengubah paket PPDB!"})
+               (catch Exception ex
+                (layout/render "admin/pesan.html" {:pesan (str "Gagal mengubah paket PPDB! error:" ex)}))))
+
+(defn admin-delete-paket-ppdb [kode]
+  (try (db/delete-data "simppdb" (str "kode='" kode "'"))
+       (layout/render "admin/pesan.html"
+                      {:pesan (str "Berhasil menghapus paket PPDB!")})
+    (catch Exception ex
+      (layout/render "admin/pesan.html" {:pesan (str "Gagal menghapus paket PPDB! error: " ex)}))))
+
+(defn admin-tambah-sma-ppdb []
+  (let [daerah (db/get-data "select * from kodedaerah order by daerah asc" 2)]
+       (layout/render "admin/tambah-sma-ppdb.html" {:daerah daerah})))
+
+(defn admin-tambah-sma-ppdb1 [kode sek nm]
+  (try
+    (db/insert-data "pgsma" {:kodedaerah (read-string kode)
+                             :sekolah sek
+                             :nm (read-string nm)})
+    (layout/render "admin/pesan.html" {:pesan "Berhasil menambah data SMA!"})
+          (catch Exception ex
+             (layout/render "admin/pesan.html" {:pesan (str "Gagal menambah data SMA! error" ex)}))))
+
+(defn admin-list-sma-ppdb []
+  (let [data (db/get-data "select * from pgsma order by kodedaerah,sekolah" 2)]
+       (layout/render "admin/list-sma-ppdb.html" {:data data})))
+
+(defn admin-edit-sma-ppdb [sekolah]
+  (let [daerah (db/get-data "select * from kodedaerah order by daerah" 2)
+        datasek (db/get-data (str "select * from pgsma where sekolah='" sekolah "'") 1)]
+    (layout/render "admin/edit-sma-ppdb.html" {:daerah daerah :datasek datasek})))
+
+(defn admin-update-sma-ppdb [sekolah kode nm]
+  (try (db/update-data-1 "pgsma"
+                              ["sekolah=?" sekolah]
+                                      {:kodedaerah (read-string kode)
+                                       :nm (read-string nm)})
+               (layout/render "admin/pesan.html" {:pesan "Berhasil mengubah data SMA!"})
+               (catch Exception ex
+                (layout/render "admin/pesan.html" {:pesan (str "Gagal mengubah data SMA! error:" ex)}))))
+
+(defn admin-delete-sma-ppdb [sekolah]
+  (try (db/delete-data "pgsma" (str "sekolah='" sekolah "'"))
+       (layout/render "admin/pesan.html"
+                      {:pesan (str "Berhasil menghapus data SMA!")})
+    (catch Exception ex
+      (layout/render "admin/pesan.html" {:pesan (str "Gagal menghapus data SMA! error: " ex)}))))
+
 ;;;routes
 (defroutes admin-routes
 
@@ -771,4 +848,35 @@
         (admin-edit-sekolah kode))
   (POST "/admin-update-sekolah" [kode nasek npsn]
         (admin-update-sekolah kode nasek npsn))
+
+  (GET "/admin-tambah-paket-ppdb" []
+       (layout/render "admin/tambah-paket-ppdb.html"))
+  (POST "/admin-tambah-paket-ppdb" [ket mat ipa ind ing]
+        (admin-tambah-paket-ppdb ket mat ipa ind ing))
+
+  (GET "/admin-edit-paket-ppdb" []
+       (admin-list-paket-ppdb))
+  (POST "/admin-edit-paket-ppdb" [kode]
+        (admin-edit-paket-ppdb kode))
+  (POST "/admin-update-paket-ppdb" [kode ket mat ipa ind ing]
+        (admin-update-paket-ppdb kode ket mat ipa ind ing))
+  (POST "/admin-delete-paket-ppdb" [kode]
+        (admin-delete-paket-ppdb kode))
+
+  (GET "/admin-tambah-sma-ppdb" []
+       (admin-tambah-sma-ppdb))
+
+  (POST "/admin-tambah-sma-ppdb" [kodedaerah sekolah nm]
+        (admin-tambah-sma-ppdb1 kodedaerah sekolah nm))
+
+  (GET "/admin-edit-sma-ppdb" []
+       (admin-list-sma-ppdb))
+  (POST "/admin-edit-sma-ppdb" [sekolah]
+        (admin-edit-sma-ppdb sekolah))
+
+  (POST "/admin-update-sma-ppdb" [sekolah kode nm]
+        (admin-update-sma-ppdb sekolah kode nm))
+  (POST "/admin-delete-sma-ppdb" [sekolah]
+        (admin-delete-sma-ppdb sekolah))
+
 )

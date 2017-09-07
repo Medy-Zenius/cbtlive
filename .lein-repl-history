@@ -1,14 +1,3 @@
-exit
-(use 'icbl.models.updatedb)
-(update "mujagurumat" "MATEMATIKA")
-exit
-(use 'icbl.models.updatedb)
-(update "mujagurumat" "MATEMATIKA")
-exit
-(use 'icbl.models.updatedb)
-(update "mujagurumat" "MATEMATIKA")
-(start-server)
-exit
 (use 'icbl.models.updatedb)
 (update "mujaguruing" "BAHASA INGGRIS")
 (update "mujaguruipa" "IPA")
@@ -498,3 +487,14 @@ exit
 exit
 (start-server "3002")
 exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
