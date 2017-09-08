@@ -11,30 +11,8 @@
         border-style: none;
       }
     </style>
-    <script>
 
-        function convert(nilai){
-           var snilai="";
-           var lnilai=nilai.length;
-           if (lnilai <= 2){
-               snilai=nilai+",00";
-           }else{
-             if (lnilai == 3){
-                snilai = nilai.substring(0,1)+","+nilai.substring(2,3)+"0";
-             }else{
-                snilai = nilai.substring(0,1)+","+nilai.substring(2,(nilai.length));
-             }
-           }
-           return snilai;
-        }
-    </script>
-    <div class="panel panel-info">
-    <div class="panel-heading">
-      <h2 class="text-center">
-      {{salam}} {{nama}} !
-      </h2>
-    </div>
-    </div>
+
     <div class="panel panel-success">
     <div class="panel-body">
       <h2 align="center">HASIL TEST</h2>
@@ -42,7 +20,7 @@
       <h3 align="center">PELAJARAN  : {{ket.pelajaran}}</h3>
       <h3 align="center">KETERANGAN : {{ket.keterangan}}</h3>
       <script>
-        document.write('<h3 align="center">NILAI : ' + convert("{{nilai.nilai}}") + '</h3>');
+        document.write('<h3 align="center">NILAI : ' + "{{nilai}}" + '</h3>');
       </script>
     </div>
     </div>

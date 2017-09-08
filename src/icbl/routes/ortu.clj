@@ -23,6 +23,7 @@
              (session/put! :id nis)
              (session/put! :nama (user :nama))
              (session/put! :ip ip)
+             (session/put! :status 4)
              (layout/render "ortu/home.html"))
            (layout/render "share/login.html"
                           {:error "Password Salah!" :nis nis :action "/ortu-login"}))
@@ -51,13 +52,10 @@
   (POST "/ortu-login" [nis pass]
        (handle-ortu-login nis pass))
 
-  (POST "/ortu-logout" []
+  (GET "/ortu-logout" []
         (share/logout "/ortu"))
 
-  (POST "/ortu-lihat-hasil" []
-        (home/handle-lihat-hasil (session/get :id) "Selamat Datang Orang Tua"))
-
-  (POST "/ortu-ganti-pw" []
+  (GET "/ortu-ganti-pw" []
         (layout/render "ortu/ganti-pw.html"))
   (POST "/ortu-ganti-pw1" [pwlama pwbaru1 pwbaru2]
         (ortu-ganti-pw pwlama pwbaru1 pwbaru2))

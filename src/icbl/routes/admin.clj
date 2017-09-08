@@ -397,8 +397,10 @@
 
 (defn handle-input-siswa [file]
   (let [data (slurp (:tempfile file))
-        sdata (st/split data #"\n")
-        vdata (map #(st/split % #",") (if (not (vector? sdata)) (st/split data #"\r") sdata))
+        ;sdata (st/split data #"\n")
+        sdata (st/split (st/replace data #"\n" "") #"\r")
+        ;vdata (map #(st/split % #",") (if (not (vector? sdata)) (st/split data #"\r") sdata))
+        vdata (map #(st/split % #",") sdata)
         ;coba (spit (str vdata) "coba.txt")
         ]
         (loop [i 0]
@@ -552,6 +554,66 @@
                       {:pesan (str "Berhasil menghapus data SMA!")})
     (catch Exception ex
       (layout/render "admin/pesan.html" {:pesan (str "Gagal menghapus data SMA! error: " ex)}))))
+
+(defn admin-tambah-daerah [daerah]
+  (try
+    (db/insert-data "kodedaerah" {:daerah daerah})
+    (layout/render "admin/pesan.html" {:pesan "Berhasil menambah data daerah!"})
+          (catch Exception ex
+             (layout/render "admin/pesan.html" {:pesan (str "Gagal menambah data daerah! error" ex)}))))
+
+(defn admin-list-daerah-ppdb []
+  (let [data (db/get-data "select * from kodedaerah order by daerah" 2)]
+    (layout/render "admin/list-daerah.html" {:data data})))
+
+(defn admin-edit-daerah-ppdb [kode]
+  (let [datum (db/get-data (str "select * from kodedaerah where kode='" kode "'") 1)]
+    (layout/render "admin/edit-daerah-ppdb.html" {:datum datum})))
+
+(defn admin-update-daerah-ppdb [kode daerah]
+  (try (db/update-data-1 "kodedaerah"
+                              ["kode=?" (read-string kode)]
+                                      {:daerah daerah})
+               (layout/render "admin/pesan.html" {:pesan "Berhasil mengubah nama daerah!"})
+               (catch Exception ex
+                (layout/render "admin/pesan.html" {:pesan (str "Gagal mengubah nama daerah! error:" ex)}))))
+
+(defn admin-tambah-paket-sbmptn [ket tkpa jurusan kelompok]
+  (try
+    (db/insert-data "simsbmptn" {:keterangan ket
+                                 :kodetkpa tkpa
+                                 :kodeipaorips jurusan
+                                 :kelompok kelompok
+                                })
+    (layout/render "admin/pesan.html" {:pesan "Berhasil menambah paket SBMPTN!"})
+          (catch Exception ex
+             (layout/render "admin/pesan.html" {:pesan (str "Gagal menambah paket SBMPTN! error" ex)}))))
+
+(defn admin-list-paket-sbmptn []
+  (let [data (db/get-data "select * from simsbmptn order by keterangan" 2)]
+       (layout/render "admin/list-paket-sbmptn.html" {:data data})))
+
+(defn admin-edit-paket-sbmptn [kode]
+  (let [datum (db/get-data (str "select * from simsbmptn where kode='" kode "'") 1)]
+    (layout/render "admin/edit-paket-sbmptn.html" {:datum datum})))
+
+(defn admin-update-paket-sbmptn [kode ket tkpa ipaorips kelompok]
+  (try (db/update-data-1 "simsbmptn"
+                              ["kode=?" (read-string kode)]
+                                      {:keterangan ket
+                                       :kodetkpa tkpa
+                                       :kodeipaorips ipaorips
+                                       :kelompok kelompok})
+               (layout/render "admin/pesan.html" {:pesan "Berhasil mengubah paket SBMPTN!"})
+               (catch Exception ex
+                (layout/render "admin/pesan.html" {:pesan (str "Gagal mengubah paket SBMPTN! error:" ex)}))))
+
+(defn admin-delete-paket-sbmptn [kode]
+  (try (db/delete-data "simsbmptn" (str "kode='" kode "'"))
+       (layout/render "admin/pesan.html"
+                      {:pesan (str "Berhasil menghapus paket SBMPTN!")})
+    (catch Exception ex
+      (layout/render "admin/pesan.html" {:pesan (str "Gagal menghapus paket SBMPTN! error: " ex)}))))
 
 ;;;routes
 (defroutes admin-routes
@@ -879,4 +941,29 @@
   (POST "/admin-delete-sma-ppdb" [sekolah]
         (admin-delete-sma-ppdb sekolah))
 
-)
+  (GET "/admin-tambah-daerah-ppdb" []
+       (layout/render "admin/tambah-daerah.html"))
+  (POST "/admin-tambah-daerah" [daerah]
+        (admin-tambah-daerah daerah))
+
+  (GET "/admin-edit-daerah-ppdb" []
+       (admin-list-daerah-ppdb))
+  (POST "/admin-edit-daerah-ppdb" [kode]
+        (admin-edit-daerah-ppdb kode))
+  (POST "/admin-update-daerah-ppdb" [kode daerah]
+        (admin-update-daerah-ppdb kode daerah))
+
+  (GET "/admin-tambah-paket-sbmptn" []
+       (layout/render "admin/tambah-paket-sbmptn.html"))
+  (POST "/admin-tambah-paket-sbmptn" [ket tkpa jurusan kelompok]
+        (admin-tambah-paket-sbmptn ket tkpa jurusan kelompok))
+
+  (GET "/admin-edit-paket-sbmptn" []
+       (admin-list-paket-sbmptn))
+  (POST "/admin-edit-paket-sbmptn" [kode]
+        (admin-edit-paket-sbmptn kode))
+  (POST "/admin-update-paket-sbmptn" [kode ket tkpa ipaorips kelompok]
+        (admin-update-paket-sbmptn kode ket tkpa ipaorips kelompok))
+  (POST "/admin-delete-paket-sbmptn" [kode]
+        (admin-delete-paket-sbmptn kode))
+  )

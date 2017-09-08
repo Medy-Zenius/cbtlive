@@ -3,10 +3,14 @@
   <script>
   function kirim(){
   document.pf.kodeto.value=document.getElementById('kodeto').value;
-  //document.pf.kategori.value=kat;
   document.getElementById("pf").submit();
   }
+  function kirim1(){
+    var btn=document.getElementById("activity").value;
+    document.getElementById("pf"+btn).submit();
+  }
   </script>
+  <!--
   <div class="panel panel-info">
     <div class="panel-heading">
       <h2 class="text-center">
@@ -14,11 +18,13 @@
       </h2>
     </div>
   </div>
+  -->
   <div class="panel panel-default panel-kodesoal h-middle">
     <div class="panel-body">
       <div class="row">
         <div align="center">
           <div class="text-default">
+            <strong>Mengerjakan Ujian</strong><br>
             <strong>Masukkan kode ujian !</strong>
 
           </div>
@@ -51,7 +57,12 @@
       </div>
     </div>
   </div>
+  <br>
+
+
+
   <form method="POST" action="/home-kodeto" name="pf" id="pf">
     <input type="hidden" name="kodeto">
   </form>
+
 {% endblock %}

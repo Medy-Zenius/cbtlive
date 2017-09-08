@@ -41,15 +41,11 @@
     cnt=cnt + "</table>";
      wDOM("list_jurusan",cnt);
   }
+  function hapusjur(){
+    wDOM("list_jurusan","");
+  }
 </script>
 
-<div class="panel panel-info">
-    <div class="panel-heading">
-      <h2 class="text-center">
-      Selamat Datang {{nama}} !
-      </h2>
-    </div>
-  </div>
 <div class="panel panel-default">
     <div class="panel-body">
       <div class="row">
@@ -67,7 +63,7 @@
       <div class="row">
         <div align="center">
           <div class="text-default">
-            <select id="perg">
+            <select id="perg" onchange="hapusjur()">
               {% for uni in univ %}
                  <option  value="{{uni.ptn}}">{{uni.ptn}}</option>
               {% endfor %}

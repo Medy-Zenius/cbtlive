@@ -1,6 +1,7 @@
 {% extends "icbl/views/templates/basebg.html" %}
 
 {% block content %}
+
     <style>
       table {
         background-color: #FFFFFF;
@@ -12,13 +13,7 @@
       }
     </style>
 
-    <div class="panel panel-info">
-    <div class="panel-heading">
-      <h2 class="text-center">
-      {{salam}} {{nama}} !
-      </h2>
-    </div>
-    </div>
+
     <h2 align="center">HASIL TEST</h2>
     <form method="POST" action="/home-detail-set">
     <table border="1" align="center">
@@ -37,5 +32,18 @@
         </tr>
         {% endfor %}
     </table>
+    </form>
+    <form method="POST" action="/home-ganti-pw" name="pf5" id="pf5">
+    </form>
+    <form method="POST" action="/home-lihat-hasil" name="pf1" id="pf1">
+    </form>
+    <form method="POST" action="/home-sim-sbmptn" name="pf3" id="pf3">
+    </form>
+    <form method="POST" action="/home-input-nomer" name="pf4" id="pf4">
+    </form>
+    <form method="POST" action="/home-sim-ppdb" name="pf2" id="pf2">
+    </form>
+    </form>
+    <form method="POST" action="/home-logout" name="pf6" id="pf6">
     </form>
 {% endblock %}

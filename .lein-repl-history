@@ -1,63 +1,3 @@
-(use 'icbl.models.updatedb)
-(update "mujaguruing" "BAHASA INGGRIS")
-(update "mujaguruipa" "IPA")
-(update "mujaguruindo" "BAHASA INDONESIA")
-(update "mujagurufis" "FISIKA")
-(update "mujabio" "BIOLOGI")
-(update "mujagurukim" "KIMIA")
-(update "mujaguruipat" "IPAT")
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-(def coba {:kode 1 :nama "bayu"})
-(coba :kode}
-(coba :kode)
-(update coba :kode #(+ 2 :kode))
-(update coba :kode inc)
-(assoc coba :umur 12)
-(update coba :kode + 2)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server 3000)
-(start-server "3000")
-(stop-server)
-(start-server "3000")
-exit
-(start-server "3000")
-(start-server)
 exit
 (start-server)
 exit
@@ -498,3 +438,63 @@ exit
 (start-server "3002")
 exit
 (start-server "3002")
+exit
+(start-server "3002")
+exit
+(slurp "../xls/terput-ix.csv")
+(clojure.string/replace #"\r" (slurp "../xls/terput-ix.csv") "")
+(clojure.string/replace #"\n" (slurp "../xls/terput-ix.csv") "")
+(clojure.string/split  #"\n" (slurp "../xls/terput-ix.csv"))
+(clojure.string/split (slurp "../xls/terput-ix.csv") "\n")
+(clojure.string/split (slurp "../xls/terput-ix.csv") #"\n")
+(clojure.string/replace (slurp "../xls/terput-ix.csv") #"\r"  "")
+(clojure.string/split (clojure.string/replace (slurp "../xls/terput-ix.csv") #"\r"  ""))
+(clojure.string/split (clojure.string/replace (slurp "../xls/terput-ix.csv") #"\r"  "") "\n")
+(clojure.string/split (clojure.string/replace (slurp "../xls/terput-ix.csv") #"\r"  "") #"\n")
+(require [clojure.string :as str])
+(us 'icbl.routes.admin)
+(use 'icbl.routes.admin)
+(st/split "tpg151607127,ZHAFIRAH AZ-ZAHRA LISANANDA,IX-4," #",")
+(clojure.string/split "tpg151607127,ZHAFIRAH AZ-ZAHRA LISANANDA,IX-4," #",")
+(slurp "../xls/smp4tangsel-dos.csv")
+(clojure.string/split (slurp "../xls/smp4tangsel-dos.csv") #"\r")
+(slurp "../xls/demo-csv-dos1.csv")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit
+(start-server "3002")
+exit

@@ -23,6 +23,7 @@
              (session/put! :id nis)
              (session/put! :nama (user :nama))
              (session/put! :ip ip)
+             (session/put! :status 3)
              (layout/render "home/home.html"))
            (layout/render "share/login.html"
                           {:error "Password Salah!" :nis nis :action "/home-login"}))
@@ -204,7 +205,7 @@
                               where kode='" remko "'") 1)
         nilai (db/get-data (str "select nilai from  dataus  where kode='" kode "'
                                 and nis='" nis "'") 1)]
-    (layout/render "home/detail-set.html" {:ket ket :nilai nilai})))
+    (layout/render "home/detail-set.html" {:ket ket :nilai (home-num-to-str (nilai :nilai) 2)})))
 
 (defn home-view-soal [kodesoal kodebahas]
   (let [prekode (subs kodesoal 0 1)
@@ -259,7 +260,7 @@
                                                      :nipaorips (format (str "%." 2 "f") (* (:nilai nilaiipaorips) 1.0))
                                                      :ptn funiv})
             (layout/render "home/pesan.html" {:pesan "Nilai tidak memenuhi syarat di semua universitas!"})))
-         (layout/render "home/pesan.html" {:pesan "Nilai kamu tidak lengkap!"}))))
+         (layout/render "home/pesan.html" {:pesan "Nilai ujian tidak lengkap!"}))))
 
 (defn home-next-univ [ptn ntot ntkpa nipaorips kelompok]
   (let [univ (db/get-data (str "select distinct ptn from pg1 where nm <='" ntot "' and
@@ -316,7 +317,7 @@
                                                      :kodedaerah fkode
                                                      })
             (layout/render "home/pesan.html" {:pesan "Nilai tidak memenuhi syarat di semua Daerah!"})))
-         (layout/render "home/pesan.html" {:pesan "Nilai kamu tidak lengkap!"}))))
+         (layout/render "home/pesan.html" {:pesan "Nilai ujian tidak lengkap!"}))))
 
 (defn home-next-daerah [kode ntot nmat nipa nind ning]
   (let [daerah (db/get-data (str "select distinct pgsma.kodedaerah as kode, daerah from pgsma
@@ -362,21 +363,21 @@
         (handle-reg-siswa nis nama kelas email pass1 pass2))
 
   (POST "/home-no-lstore" []
-        (layout/render "home/kode1p.html"))
+        (layout/render "home/kode1.html"))
   (POST "/home-input-kode" []
         (layout/render "home/kode1.html"))
 
-  (POST "/home-input-nomer" []
+  (GET "/home-input-nomer" []
         (layout/render "home/nomer.html"))
   (POST "/home-kodebahas" [kodebahas]
         (home-kodebahas kodebahas))
 
-  (POST "/home-ganti-pw" []
+  (GET "/home-ganti-pw" []
         (layout/render "home/ganti-pw.html"))
   (POST "/home-ganti-pw1" [pwlama pwbaru1 pwbaru2]
         (home-ganti-pw-siswa pwlama pwbaru1 pwbaru2))
 
-  (POST "/home-lihat-hasil" []
+  (GET "/home-lihat-hasil" []
         (handle-lihat-hasil (session/get :id) "Selamat Datang "))
 
   (POST "/home-detail-set" [kode]
@@ -394,14 +395,14 @@
   (POST "/home-tryout-baru" []
         (layout/render "home/kode1.html"))
 
-  (POST "/home-sim-sbmptn" []
+  (GET "/home-sim-sbmptn" []
         (home-pilih-paket))
   (POST "/home-proses-paket" [kode]
         (home-proses-paket kode))
   (POST "/home-next-univ" [ptn ntot ntkpa nipaorips kelompok]
         (home-next-univ ptn (read-string ntot) ntkpa nipaorips kelompok))
 
-  (POST "/home-sim-ppdb" []
+  (GET "/home-sim-ppdb" []
         (home-pilih-paket-ppdb))
   (POST "/home-proses-paket-ppdb" [kode]
         (home-proses-paket-ppdb kode))
