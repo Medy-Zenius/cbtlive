@@ -1,68 +1,3 @@
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server "3500")
-exit
-(start-server "3500")
-exit
-(start-server "3500")
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(use 'icbl.models.updatedb)
-(modify-ps)
-(use 'icbl.models.updatedb :reload)
-(modify-ps)
-(use 'icbl.models.updatedb :reload)
 (modify-ps)
 exit
 (start-server)
@@ -497,4 +432,69 @@ exit
 (start-server "3002")
 exit
 (start-server "3002")
+exit
+(start-server "3002")
+(use 'icbl.models.share)
+(hitung-ulang "B1026")
+exit
+(use 'icbl.models.share)
+(hitung-ulang "B1026")
+(use 'icbl.models.share reload)
+(use reload 'icbl.models.share)
+(use  'icbl.models.share)
+(hitung-ulang "B1026")
+exit
+(hitung-ulang "B1026")
+(use  'icbl.models.share)
+(hitung-ulang "B1026")
+(use  'icbl.models.share :reload)
+(hitung-ulang "B1026")
+(use  'icbl.models.share :reload)
+(hitung-ulang "B1026")
+(use  'icbl.models.share :reload)
+(hitung-ulang "B1026")
+(use  'icbl.models.share :reload)
+(hitung-ulang "B1026")
+(hitung-nilai "AAA--" ["A" "A" "B" "C" "D"] 1 0 10)
+(hitung-nilai "AAA--" ["A" "A" "B" "C" "D"] 1 0 100)
+(hitung-nilai "AAA--" ["A" "A" "B" "C" "D"] 4 -1 100)
+(use  'icbl.models.share :reload)
+(hitung-ulang "B1026")
+(use  'icbl.models.share :reload)
+(hitung-ulang "B1026")
+(use  'icbl.models.share :reload)
+(hitung-ulang "B1026")
+(use  'icbl.models.share :reload)
+(hitung-ulang "B1026")
+(use  'icbl.models.share :reload)
+(hitung-ulang "B1026")
+exit
+(start-server "3002")
+(use  'icbl.models.share :reload)
+(hitung-ulang "B1026")
+(use  'icbl.models.share :reload)
+(hitung-ulang "B1026")
+(do (hitung-ulang "B1026") (println "selesai"))
+(do (println "X") (hitung-ulang "B1026"))
+(use  'icbl.models.share :reload)
+(hitung-ulang "B1026")
+(use  'icbl.models.share :reload)
+(hitung-ulang "B1026")
+(use  'icbl.models.share :reload)
+(hitung-ulang "B1026")
+exit
+(start-server "3002")
+(use 'icbl.models.share :reload)
+(hitung-ulang "B1026")
+exit
+(start-server "3002")
+exit
+(use 'icbl.models.share)
+(create32bit)
+(use 'icbl.models.share :reload)
+(create32bit)
+(* 10 52 32)
+(* 520 520 520 520)
+exit
+(clojure.string/trimr "123   ")
 exit

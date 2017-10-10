@@ -23,7 +23,7 @@
              (session/put! :id nis)
              (session/put! :nama (user :nama))
              (session/put! :ip ip)
-             (session/put! :status 3)
+             (session/put! :status 4)
              (layout/render "home/home.html"))
            (layout/render "share/login.html"
                           {:error "Password Salah!" :nis nis :action "/home-login"}))

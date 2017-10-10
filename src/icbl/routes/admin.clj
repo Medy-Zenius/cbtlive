@@ -8,6 +8,7 @@
             [noir.session :as session]
             [clojure.data.json :as json]
             [icbl.routes.teacher :as teacher]
+            [icbl.models.share :as share]
             ))
 
 (defn num-to-str [number dk]
@@ -407,9 +408,9 @@
           (if (= i (count vdata))
             (layout/render "admin/pesan.html" {:pesan "Menambah data siswa telah selesai!"})
             (do
-              (let [nis_ada (db/get-data (str "select nis from users where nis='" ((nth vdata i) 0) "'") 1)]
+              (let [nis_ada (db/get-data (str "select nis from users where nis='" (st/trimr ((nth vdata i) 0)) "'") 1)]
                 (if (not nis_ada)
-                  (db/insert-data "users" {:nis ((nth vdata i) 0)
+                  (db/insert-data "users" {:nis (st/trimr ((nth vdata i) 0))
                                            :nama ((nth vdata i) 1)
                                            :kelas ((nth vdata i) 2)
                                            ;:email ((nth vdata i) 3)
@@ -614,6 +615,13 @@
                       {:pesan (str "Berhasil menghapus paket SBMPTN!")})
     (catch Exception ex
       (layout/render "admin/pesan.html" {:pesan (str "Gagal menghapus paket SBMPTN! error: " ex)}))))
+
+(defn admin-hitung-ulang-hasil [kode]
+  (try
+    (share/hitung-ulang kode)
+    (layout/render "admin/pesan.html" {:pesan "Selesai hitung ulang hasil test!"})
+    (catch Exception ex
+          (layout/render "admin/pesan.html" {:pesan (str "Gagal hitung ulang hasil! error:" ex)}))))
 
 ;;;routes
 (defroutes admin-routes
@@ -966,4 +974,9 @@
         (admin-update-paket-sbmptn kode ket tkpa ipaorips kelompok))
   (POST "/admin-delete-paket-sbmptn" [kode]
         (admin-delete-paket-sbmptn kode))
+
+  (GET "/admin-hitung-ulang-hasil" []
+       (layout/render "admin/input-kode.html"))
+  (POST "/admin-hitung-ulang-hasil" [kode]
+        (admin-hitung-ulang-hasil kode))
   )
