@@ -1,9 +1,3 @@
-exit
-(start-server)
-exit
-(start-server)
-lein repl
-exit
 (start-server)
 exit
 (start-server)
@@ -498,3 +492,9 @@ exit
 (start-server)
 exit
 (start-server)
+exit
+(start-server)
+exit
+(start-server)
+(count "234")
+exit

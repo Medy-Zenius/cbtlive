@@ -178,10 +178,10 @@
     (layout/render "admin/view-sekolah.html" {:kodesoal kode :data sekolah :action act})))
 
 (defn admin-pilih-kelas [kosek kodesoal act]
-  (let [allkelas (db/get-data (str "select dataus.nis as nis,kelas from dataus INNER JOIN users
+  (let [allkelas (db/get-data (str "select distinct kelas from dataus INNER JOIN users
                                  ON dataus.nis=users.nis where dataus.kode='" kodesoal "'
                                    and dataus.nis LIKE '" kosek "%'") 2)
-        vkelas (conj (sort (distinct (map #(:kelas %) allkelas))) "SEMUA")]
+        vkelas (conj (sort (map #(:kelas %) allkelas)) "SEMUA")]
     (layout/render "admin/pilih-kelas.html" {:kelas vkelas :kodesoal kodesoal :kosek kosek :action act})))
 
 (defn admin-hasil-test [kodesoal kosek kelas html]
@@ -631,6 +631,21 @@
   (let [data (db/get-data "select kode,nasek from sekolah order by nasek" 2)]
     (layout/render "admin/view-sekolah-ppdb.html" {:data data :kodepaket kodepaket})))
 
+(defn admin-pilih-kelas-ppdb [kosek kodepaket act]
+  (let [vkode (db/get-data (str "select kodemat,kodeipa,kodeind,kodeing from simppdb where kode='" kodepaket "'") 1)
+        kmat (:kodemat vkode)
+        kipa (:kodeipa vkode)
+        kind (:kodeind vkode)
+        king (:kodeing vkode)
+        allkelas (db/get-data (str "select distinct kelas from dataus INNER JOIN users
+                                 ON dataus.nis=users.nis where (dataus.kode='" kmat "'
+                                   or dataus.kode='" kipa "' or
+                                   dataus.kode='" kind "'
+                                   or dataus.kode='" king "')
+                                   and dataus.nis LIKE '" kosek "%'") 2)
+        vkelas (conj (sort (map #(:kelas %) allkelas)) "SEMUA")]
+    (layout/render "admin/pilih-kelas-ppdb.html" {:kelas vkelas :kodepaket kodepaket :kosek kosek :action act})))
+
 (defn admin-jbenar [sa sb]
   (let [seq-sa (seq sa)
         seq-sb (seq sb)]
@@ -642,8 +657,11 @@
 (defn admin-jsalah [sa sb]
   (reduce + (map #(if (and (not= \- %1) (not= %1 %2)) 1 0) (seq sa) (seq sb))))
 
-(defn admin-proses-laporan-ppdb [kosek kodepaket]
-  (let [vkodepaket (db/get-data (str "select kodemat,kodeipa,kodeind,kodeing from simppdb where kode='" kodepaket "'") 1)
+(defn admin-proses-laporan-ppdb [kosek kodepaket kelas]
+  (let [sekolah (:nasek (db/get-data (str "select nasek from sekolah where kode='" kosek "'") 1))
+        ckosek (count kosek)
+        paket (:keterangan (db/get-data (str "select keterangan from simppdb where kode='" kodepaket "'") 1))
+        vkodepaket (db/get-data (str "select kodemat,kodeipa,kodeind,kodeing from simppdb where kode='" kodepaket "'") 1)
         kodemat (:kodemat vkodepaket)
         kodeipa (:kodeipa vkodepaket)
         kodeind (:kodeind vkodepaket)
@@ -656,20 +674,43 @@
         kunciipa (:kunci (db/get-data (str "select kunci from bankproset where kode='" skodeipa "'") 1))
         kunciind (:kunci (db/get-data (str "select kunci from bankproset where kode='" skodeind "'") 1))
         kunciing (:kunci (db/get-data (str "select kunci from bankproset where kode='" skodeing "'") 1))
-        vsiswa (db/get-data (str "select distinct dataus.nis as nis,nama,kelas from dataus
+        vsiswa (if (= kelas "SEMUA")
+                   (db/get-data (str "select distinct dataus.nis as nis,nama,kelas from dataus
                                  inner join users on dataus.nis=users.nis where
                                  (kode='" kodemat "' or kode='" kodeipa "' or
                                  kode='" kodeind "' or kode='" kodeing "')
                                  and dataus.nis like '" kosek "%'" ) 2)
+                   (db/get-data (str "select distinct dataus.nis as nis,nama,kelas from dataus
+                                 inner join users on dataus.nis=users.nis where
+                                 (kode='" kodemat "' or kode='" kodeipa "' or
+                                 kode='" kodeind "' or kode='" kodeing "')
+                                 and dataus.nis like '" kosek "%' and users.kelas='" kelas "'") 2)
+                 )
         csis (count vsiswa)
-        vnmat (db/get-data (str "select nis,jawaban,nilai from dataus where kode='" kodemat "'
+        vnmat (if (= kelas "SEMUA")
+              (db/get-data (str "select nis,jawaban,nilai from dataus where kode='" kodemat "'
                                 and nis like '" kosek "%'") 2)
-        vnipa (db/get-data (str "select nis,jawaban,nilai from dataus where kode='" kodeipa "'
+              (db/get-data (str "select dataus.nis as nis,jawaban,nilai from dataus inner join users
+                                on dataus.nis=users.nis where dataus.kode='" kodemat "'
+                                and dataus.nis like '" kosek "%' and users.kelas='" kelas "'") 2))
+        vnipa (if (= kelas "SEMUA")
+              (db/get-data (str "select nis,jawaban,nilai from dataus where kode='" kodeipa "'
                                 and nis like '" kosek "%'") 2)
-        vnind (db/get-data (str "select nis,jawaban,nilai from dataus where kode='" kodeind "'
+              (db/get-data (str "select dataus.nis as nis,jawaban,nilai from dataus inner join users
+                                on dataus.nis=users.nis where kode='" kodeipa "'
+                                and dataus.nis like '" kosek "%' and users.kelas='" kelas "'") 2))
+        vnind (if (= kelas "SEMUA")
+              (db/get-data (str "select nis,jawaban,nilai from dataus where kode='" kodeind "'
                                 and nis like '" kosek "%'") 2)
-        vning (db/get-data (str "select nis,jawaban,nilai from dataus where kode='" kodeing "'
+              (db/get-data (str "select dataus.nis as nis,jawaban,nilai from dataus inner join users
+                                on dataus.nis=users.nis where kode='" kodeind "'
+                                and dataus.nis like '" kosek "%' and users.kelas='" kelas "'") 2))
+        vning (if (= kelas "SEMUA")
+              (db/get-data (str "select nis,jawaban,nilai from dataus where kode='" kodeing "'
                                 and nis like '" kosek "%'") 2)
+              (db/get-data (str "select dataus.nis as nis,jawaban,nilai from dataus inner join users
+                                on dataus.nis=users.nis where kode='" kodeing "'
+                                and dataus.nis like '" kosek "%' and users.kelas='" kelas "'") 2))
         vnmat1 (map (fn [x] {:nis (:nis x)
                              :nilai (:nilai x)
                              :B (admin-jbenar (:jawaban x) kuncimat)
@@ -722,17 +763,19 @@
                          Bing (if m-ing (:B m-ing) " ")
                          Sing (if m-ing (:S m-ing) " ")
                          King (if m-ing (:K m-ing) " ")
-
                          ]
-                     (recur (conj a {:nis nis :nama nama :ntot ntot :kelas kelas
-                                     :nmat nmat :Bmat Bmat :Smat Smat :Kmat Kmat
-                                     :nipa nipa :Bipa Bipa :Sipa Sipa :Kipa Kipa
-                                     :nind nind :Bind Bind :Sind Sind :Kind Kind
-                                     :ning ning :Bing Bing :Sing Sing :King King})
+                     (recur (conj a {:nis (subs nis ckosek (count nis))
+                                     :nama nama :ntot (num-to-str ntot 2) :kelas kelas
+                                     :nmat (if (= nmat " ") " " (num-to-str nmat 2)) :Bmat Bmat :Smat Smat :Kmat Kmat
+                                     :nipa (if (= nipa " ") " " (num-to-str nipa 2)) :Bipa Bipa :Sipa Sipa :Kipa Kipa
+                                     :nind (if (= nind " ") " " (num-to-str nind 2)) :Bind Bind :Sind Sind :Kind Kind
+                                     :ning (if (= ning " ") " " (num-to-str ning 2)) :Bing Bing :Sing Sing :King King})
                             (inc i)))))
 
         ]
-    (layout/render "admin/pesan.html" {:pesan (vec daftar)})
+    (layout/render "admin/hasil-test-ppdb.html" {:data (vec (reverse (sort-by :ntot daftar)))
+                                                 :paket paket
+                                                 :sekolah sekolah})
     ))
 
 ;;;routes
@@ -839,8 +882,10 @@
        (admin-ppdb-sekolah))
   (POST "/admin-pilih-sekolah-ppdb" [kode]
         (admin-pilih-sekolah-ppdb kode))
-  (POST "/admin-proses-laporan-ppdb" [kosek kodepaket]
-        (admin-proses-laporan-ppdb kosek kodepaket))
+  (POST "/admin-pilih-kelas-ppdb" [kosek kodepaket]
+        (admin-pilih-kelas-ppdb kosek kodepaket "/admin-proses-laporan-ppdb"))
+  (POST "/admin-proses-laporan-ppdb" [kosek kodepaket kelas]
+        (admin-proses-laporan-ppdb kosek kodepaket kelas))
 
   ;;Analisis Butir Soal
   (GET "/admin-abs" []
