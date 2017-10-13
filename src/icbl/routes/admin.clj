@@ -623,6 +623,118 @@
     (catch Exception ex
           (layout/render "admin/pesan.html" {:pesan (str "Gagal hitung ulang hasil! error:" ex)}))))
 
+(defn admin-ppdb-sekolah []
+  (let [data (db/get-data  "select * from simppdb order by keterangan" 2)]
+    (layout/render "admin/view-paket-ppdb.html" {:data data})))
+
+(defn admin-pilih-sekolah-ppdb [kodepaket]
+  (let [data (db/get-data "select kode,nasek from sekolah order by nasek" 2)]
+    (layout/render "admin/view-sekolah-ppdb.html" {:data data :kodepaket kodepaket})))
+
+(defn admin-jbenar [sa sb]
+  (let [seq-sa (seq sa)
+        seq-sb (seq sb)]
+    (reduce + (map #(if (= %1 %2) 1 0) seq-sa seq-sb))))
+
+(defn admin-jkosong [sa]
+  (count (filter #(= \- %) (seq sa))))
+
+(defn admin-jsalah [sa sb]
+  (reduce + (map #(if (and (not= \- %1) (not= %1 %2)) 1 0) (seq sa) (seq sb))))
+
+(defn admin-proses-laporan-ppdb [kosek kodepaket]
+  (let [vkodepaket (db/get-data (str "select kodemat,kodeipa,kodeind,kodeing from simppdb where kode='" kodepaket "'") 1)
+        kodemat (:kodemat vkodepaket)
+        kodeipa (:kodeipa vkodepaket)
+        kodeind (:kodeind vkodepaket)
+        kodeing (:kodeing vkodepaket)
+        skodemat (subs kodemat 1 (count kodemat))
+        skodeipa (subs kodeipa 1 (count kodeipa))
+        skodeind (subs kodeind 1 (count kodeind))
+        skodeing (subs kodeing 1 (count kodeing))
+        kuncimat (:kunci (db/get-data (str "select kunci from bankproset where kode='" skodemat "'") 1))
+        kunciipa (:kunci (db/get-data (str "select kunci from bankproset where kode='" skodeipa "'") 1))
+        kunciind (:kunci (db/get-data (str "select kunci from bankproset where kode='" skodeind "'") 1))
+        kunciing (:kunci (db/get-data (str "select kunci from bankproset where kode='" skodeing "'") 1))
+        vsiswa (db/get-data (str "select distinct dataus.nis as nis,nama,kelas from dataus
+                                 inner join users on dataus.nis=users.nis where
+                                 (kode='" kodemat "' or kode='" kodeipa "' or
+                                 kode='" kodeind "' or kode='" kodeing "')
+                                 and dataus.nis like '" kosek "%'" ) 2)
+        csis (count vsiswa)
+        vnmat (db/get-data (str "select nis,jawaban,nilai from dataus where kode='" kodemat "'
+                                and nis like '" kosek "%'") 2)
+        vnipa (db/get-data (str "select nis,jawaban,nilai from dataus where kode='" kodeipa "'
+                                and nis like '" kosek "%'") 2)
+        vnind (db/get-data (str "select nis,jawaban,nilai from dataus where kode='" kodeind "'
+                                and nis like '" kosek "%'") 2)
+        vning (db/get-data (str "select nis,jawaban,nilai from dataus where kode='" kodeing "'
+                                and nis like '" kosek "%'") 2)
+        vnmat1 (map (fn [x] {:nis (:nis x)
+                             :nilai (:nilai x)
+                             :B (admin-jbenar (:jawaban x) kuncimat)
+                             :S (admin-jsalah (:jawaban x) kuncimat)
+                             :K (admin-jkosong (:jawaban x))}) vnmat)
+        vnipa1 (map (fn [x] {:nis (:nis x)
+                             :nilai (:nilai x)
+                             :B (admin-jbenar (:jawaban x) kunciipa)
+                             :S (admin-jsalah (:jawaban x) kunciipa)
+                             :K (admin-jkosong (:jawaban x))}) vnipa)
+        vnind1 (map (fn [x] {:nis (:nis x)
+                             :nilai (:nilai x)
+                             :B (admin-jbenar (:jawaban x) kunciind)
+                             :S (admin-jsalah (:jawaban x) kunciind)
+                             :K (admin-jkosong (:jawaban x))}) vnind)
+        vning1 (map (fn [x] {:nis (:nis x)
+                             :nilai (:nilai x)
+                             :B (admin-jbenar (:jawaban x) kunciing)
+                             :S (admin-jsalah (:jawaban x) kunciing)
+                             :K (admin-jkosong (:jawaban x))}) vning)
+
+        daftar (loop [a [] i 0]
+                 (if (= i csis)
+                   a
+                   (let [m-sis (nth vsiswa i)
+                         m-mat (first (filter #(= (:nis m-sis) (:nis %)) vnmat1))
+                         m-ipa (first (filter #(= (:nis m-sis) (:nis %)) vnipa1))
+                         m-ind (first (filter #(= (:nis m-sis) (:nis %)) vnind1))
+                         m-ing (first (filter #(= (:nis m-sis) (:nis %)) vning1))
+                         ntot (+ (if m-mat (:nilai m-mat) 0)
+                                 (if m-ipa (:nilai m-ipa) 0)
+                                 (if m-ind (:nilai m-ind) 0)
+                                 (if m-ing (:nilai m-ing) 0))
+                         nis (:nis m-sis)
+                         nama (:nama m-sis)
+                         kelas (:kelas m-sis)
+                         nmat (if m-mat (:nilai m-mat) " ")
+                         Bmat (if m-mat (:B m-mat) " ")
+                         Smat (if m-mat (:S m-mat) " ")
+                         Kmat (if m-mat (:K m-mat) " ")
+                         nipa (if m-ipa (:nilai m-ipa) " ")
+                         Bipa (if m-ipa (:B m-ipa) " ")
+                         Sipa (if m-ipa (:S m-ipa) " ")
+                         Kipa (if m-ipa (:K m-ipa) " ")
+                         nind (if m-ind (:nilai m-ind) " ")
+                         Bind (if m-ind (:B m-ind) " ")
+                         Sind (if m-ind (:S m-ind) " ")
+                         Kind (if m-ind (:K m-ind) " ")
+                         ning (if m-ing (:nilai m-ing) " ")
+                         Bing (if m-ing (:B m-ing) " ")
+                         Sing (if m-ing (:S m-ing) " ")
+                         King (if m-ing (:K m-ing) " ")
+
+                         ]
+                     (recur (conj a {:nis nis :nama nama :ntot ntot :kelas kelas
+                                     :nmat nmat :Bmat Bmat :Smat Smat :Kmat Kmat
+                                     :nipa nipa :Bipa Bipa :Sipa Sipa :Kipa Kipa
+                                     :nind nind :Bind Bind :Sind Sind :Kind Kind
+                                     :ning ning :Bing Bing :Sing Sing :King King})
+                            (inc i)))))
+
+        ]
+    (layout/render "admin/pesan.html" {:pesan (vec daftar)})
+    ))
+
 ;;;routes
 (defroutes admin-routes
 
@@ -722,6 +834,13 @@
           (admin-pilih-kelas kosek kodesoal "/admin-hasil-testB")))
   (POST "/admin-hasil-testB" [kodesoal kosek kelas]
          (admin-hasil-test kodesoal kosek kelas "admin/hasil-test.html"))
+
+  (GET "/admin-paket-ppdb" []
+       (admin-ppdb-sekolah))
+  (POST "/admin-pilih-sekolah-ppdb" [kode]
+        (admin-pilih-sekolah-ppdb kode))
+  (POST "/admin-proses-laporan-ppdb" [kosek kodepaket]
+        (admin-proses-laporan-ppdb kosek kodepaket))
 
   ;;Analisis Butir Soal
   (GET "/admin-abs" []
