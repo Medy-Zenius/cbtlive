@@ -11,6 +11,7 @@
                  [selmer "0.5.4"]
                  [ring-server "0.3.1"]
                  [org.clojure/data.json "0.2.6"]
+                 [dk.ative/docjure "1.11.0"]
                  ;[clj-time "0.9.0"]
                  ;[clj-time "0.11.0"]
                  ;[com.draines/postal "1.11.3"]

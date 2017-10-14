@@ -9,6 +9,7 @@
             [clojure.data.json :as json]
             [icbl.routes.teacher :as teacher]
             [icbl.models.share :as share]
+            [dk.ative.docjure.spreadsheet :refer :all]
             ))
 
 (defn num-to-str [number dk]
@@ -623,13 +624,13 @@
     (catch Exception ex
           (layout/render "admin/pesan.html" {:pesan (str "Gagal hitung ulang hasil! error:" ex)}))))
 
-(defn admin-ppdb-sekolah []
+(defn admin-ppdb-sekolah [act]
   (let [data (db/get-data  "select * from simppdb order by keterangan" 2)]
-    (layout/render "admin/view-paket-ppdb.html" {:data data})))
+    (layout/render "admin/view-paket-ppdb.html" {:data data :action act})))
 
-(defn admin-pilih-sekolah-ppdb [kodepaket]
+(defn admin-pilih-sekolah-ppdb [kodepaket act]
   (let [data (db/get-data "select kode,nasek from sekolah order by nasek" 2)]
-    (layout/render "admin/view-sekolah-ppdb.html" {:data data :kodepaket kodepaket})))
+    (layout/render "admin/view-sekolah-ppdb.html" {:data data :kodepaket kodepaket :action act})))
 
 (defn admin-pilih-kelas-ppdb [kosek kodepaket act]
   (let [vkode (db/get-data (str "select kodemat,kodeipa,kodeind,kodeing from simppdb where kode='" kodepaket "'") 1)
@@ -657,7 +658,7 @@
 (defn admin-jsalah [sa sb]
   (reduce + (map #(if (and (not= \- %1) (not= %1 %2)) 1 0) (seq sa) (seq sb))))
 
-(defn admin-proses-laporan-ppdb [kosek kodepaket kelas]
+(defn admin-proses-laporan-ppdb [kosek kodepaket kelas mode]
   (let [sekolah (:nasek (db/get-data (str "select nasek from sekolah where kode='" kosek "'") 1))
         ckosek (count kosek)
         paket (:keterangan (db/get-data (str "select keterangan from simppdb where kode='" kodepaket "'") 1))
@@ -773,10 +774,26 @@
                             (inc i)))))
 
         ]
+    (if (= mode 1)
     (layout/render "admin/hasil-test-ppdb.html" {:data (vec (reverse (sort-by :ntot daftar)))
                                                  :paket paket
                                                  :sekolah sekolah})
-    ))
+    (let [datax (vec (reverse (sort-by :ntot daftar)))
+          vdata (map (fn [x] [(:nis x)
+                              (:nama x)
+                              (:kelas x)
+                              (:Bmat x) (:Smat x) (:Kmat x) (:nmat x)
+                              (:Bipa x) (:Sipa x) (:Kipa x) (:nipa x)
+                              (:Bind x) (:Sind x) (:Kind x) (:nind x)
+                              (:Bing x) (:Sing x) (:King x) (:ning x)
+                              (:ntot x)]) datax)
+          header [["NIS" "NAMA" "KELAS" "B" "S" "K" "NIL" "B" "S" "K" "NIL"
+                   "B" "S" "K" "NIL" "B" "S" "K" "NIL" "TOTAL"]]
+          dataxcel (vec (concat header vdata))
+          wb (create-workbook "HASILTEST" dataxcel)]
+      (save-workbook! "dokumen/coba1.xls" wb)
+      (layout/render "admin/pesan.html" {:pesan "coba lihat di dokumen/coba1.xls"}))
+    )))
 
 ;;;routes
 (defroutes admin-routes
@@ -879,13 +896,13 @@
          (admin-hasil-test kodesoal kosek kelas "admin/hasil-test.html"))
 
   (GET "/admin-paket-ppdb" []
-       (admin-ppdb-sekolah))
+       (admin-ppdb-sekolah "/admin-pilih-sekolah-ppdb"))
   (POST "/admin-pilih-sekolah-ppdb" [kode]
-        (admin-pilih-sekolah-ppdb kode))
+        (admin-pilih-sekolah-ppdb kode "/admin-pilih-kelas-ppdb"))
   (POST "/admin-pilih-kelas-ppdb" [kosek kodepaket]
         (admin-pilih-kelas-ppdb kosek kodepaket "/admin-proses-laporan-ppdb"))
   (POST "/admin-proses-laporan-ppdb" [kosek kodepaket kelas]
-        (admin-proses-laporan-ppdb kosek kodepaket kelas))
+        (admin-proses-laporan-ppdb kosek kodepaket kelas 1))
 
   ;;Analisis Butir Soal
   (GET "/admin-abs" []
@@ -1003,6 +1020,15 @@
        (handle-admin-search-proset nopel ket "/admin-adk-excelB" ""))
   (POST "/admin-adk-excelB" [kode]
         (teacher/teacher-dayakecoh kode "teacher/hasil-adk-excel.html"))
+
+  (GET "/admin-paket-ppdb-excell" []
+       (admin-ppdb-sekolah "/admin-pilih-sekolah-ppdb-excell"))
+  (POST "/admin-pilih-sekolah-ppdb-excell" [kode]
+        (admin-pilih-sekolah-ppdb kode "/admin-pilih-kelas-ppdb-excell"))
+  (POST "/admin-pilih-kelas-ppdb-excell" [kosek kodepaket]
+        (admin-pilih-kelas-ppdb kosek kodepaket "/admin-proses-laporan-ppdb-excell"))
+  (POST "/admin-proses-laporan-ppdb-excell" [kosek kodepaket kelas]
+        (admin-proses-laporan-ppdb kosek kodepaket kelas 2))
 
   (GET "/admin-set-ip" []
        (admin-set-ip))

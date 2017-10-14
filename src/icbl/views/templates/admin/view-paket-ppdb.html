@@ -3,7 +3,7 @@
 {% block content %}
     <h3 align="center">DAFTAR PAKET PPDB SMA</h3>
     <h4 align="center">Klik KODE untuk Memilih PAKET!</h4>
-    <form method="POST" action="/admin-pilih-sekolah-ppdb">
+    <form method="POST" action="{{action}}">
     <table border="1" align="center">
         <tr><td>KODE</td><td>NAMA PAKET</td><td>Mat</td><td>Sains</td><td>Ind</td><td>Ing</td></tr>
         {% for datum in data %}

@@ -11,16 +11,6 @@ exit
 (start-server)
 exit
 (start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
-exit
-(start-server)
 slurp /Users/medysuharta/Documents/app_school/xls/smp4tangselkelas7.csv
 (stop server)
 exit
@@ -497,4 +487,14 @@ exit
 exit
 (start-server)
 (count "234")
+exit
+(start-server)
+exit
+(start-server)
+exit
+(start-server)
+exit
+(start-server)
+exit
+(start-server)
 exit
