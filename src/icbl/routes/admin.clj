@@ -10,11 +10,22 @@
             [icbl.routes.teacher :as teacher]
             [icbl.models.share :as share]
             [dk.ative.docjure.spreadsheet :refer :all]
-            ))
+            [ring.util.response :refer [file-response]]
+            )
+  (:import (java.io File)))
 
 (defn num-to-str [number dk]
   (-> (format (str "%." dk "f") (* number 1.0))
       (clojure.string/replace #"\." ",")))
+
+(defn admin-buat-kode []
+  (let [letters "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890"
+        sufik (loop [a [], i 0]
+                (if (= i 15)
+                  (apply str a)
+                  (recur (conj a (rand-nth letters)) (inc i))))
+        ]
+    sufik))
 
 (defn admin-home []
   (layout/render "admin/home.html")
@@ -159,7 +170,8 @@
                                 :status "0"
                                 :skala 10
                                 :nbenar 1
-                                :nsalah 0})
+                                :nsalah 0
+                                :kodex (admin-buat-kode)})
       (layout/render "admin/pesan.html" {:pesan (str "Berhasil daftarkan proset!")})
       (catch Exception ex
                   (layout/render "admin/pesan.html" {:pesan (str "Gagal daftarkan proset! error: " ex)}))))
@@ -215,12 +227,13 @@
 
 (defn admin-update-proset [kode ket jsoal waktu jumpil skala nbenar nsalah acak status]
   (let [postkode (subs kode 1 (count kode))
-        datum (db/get-data (str "select kunci,jenis,upto,pretext,sound from bankproset where kode='" postkode "'") 1)
+        datum (db/get-data (str "select kunci,jenis,upto,pretext,sound,kodepel,status,kodex from bankproset where kode='" postkode "'") 1)
         oldkunci (datum :kunci)
         oldjenis (datum :jenis)
         oldupto (datum :upto)
         oldpretext (if (datum :pretext) (read-string (datum :pretext)) nil)
         oldsound (if (datum :sound) (read-string (datum :sound)) nil)
+        oldstatus (datum :status)
         cok (count oldkunci)
         vjsoal (Integer/parseInt jsoal)
         newkunci (cond
@@ -245,7 +258,8 @@
                      (= vjsoal cok) (str oldsound)
                      (< vjsoal cok) (str (vec (take vjsoal oldsound)))
                      :else (str (vec (concat oldsound (repeat (- vjsoal cok) "-"))))) nil)
-
+        kodepel (datum :kodepel)
+        kodex (datum :kodex)
         ]
   (try
     (db/update-data "bankproset" (str "kode='" postkode "'")
@@ -263,25 +277,41 @@
                      :skala (Integer/parseInt skala)
                      :nbenar (Integer/parseInt nbenar)
                      :nsalah (Integer/parseInt nsalah)})
+    (do
+    (if (not= status oldstatus)
+      (if (= status "0")
+        (.renameTo (File. (str "resources/public/bankproset/" kodepel "/" postkode))
+                   (File. (str "resources/public/bankproset/" kodepel "/" kodex)))
+        (.renameTo (File. (str "resources/public/bankproset/" kodepel "/" kodex))
+                   (File. (str "resources/public/bankproset/" kodepel "/" postkode))))
+      nil)
     (layout/render "admin/pesan.html" {:pesan (str "Berhasil update proset!")})
+      )
     (catch Exception ex
                   (layout/render "admin/pesan.html" {:pesan (str "Gagal update proset! error: " ex)})))))
 
 (defn admin-upload-file [kode kodepel]
-  (do
-    (io/create-path (str "resources/public/bankproset/" kodepel "/" kode) true)
-    (layout/render "admin/upload.html" {:kode kode :kodepel kodepel})))
+  (let [datum (db/get-data (str "select status,kodex from bankproset where kode='" kode "'") 1)
+        status (datum :status)
+        kodex (datum :kodex)]
+    (if (= status "0")
+      (do
+        (io/create-path (str "resources/public/bankproset/" kodepel "/" kodex) true)
+        (layout/render "admin/upload.html" {:kode kode :kodepel kodepel}))
+      (layout/render "admin/pesan.html" {:pesan "Status Nol-kan dulu sebelum upload files!"}))))
 
 (defn handle-admin-upload [kodepel kode file]
-  (try
-    (if (vector? file)
-      (doseq [i file]
-          (io/upload-file (str "resources/public/bankproset/" kodepel "/" kode) i))
-      (io/upload-file (str "resources/public/bankproset/" kodepel "/" kode) file))
-      (layout/render "admin/pesan.html" {:pesan "Berhasil upload file!"})
-     (catch Exception ex
-                  (layout/render "admin/pesan.html" {:pesan (str "Gagal upload file! error: " ex)}))
-    ))
+  (let [datum (db/get-data (str "select kodex from bankproset where kode='" kode "'") 1)
+        kodex (datum :kodex)]
+    (try
+      (if (vector? file)
+        (doseq [i file]
+            (io/upload-file (str "resources/public/bankproset/" kodepel "/" kodex) i))
+        (io/upload-file (str "resources/public/bankproset/" kodepel "/" kodex) file))
+        (layout/render "admin/pesan.html" {:pesan "Berhasil upload file!"})
+       (catch Exception ex
+                    (layout/render "admin/pesan.html" {:pesan (str "Gagal upload file! error: " ex)}))
+      )))
 
 
 (defn admin-edit-kunci [kode act]
@@ -303,11 +333,13 @@
                   (layout/render "admin/pesan.html" {:pesan (str "Gagal simpan kunci! error: " ex)}))))
 
 (defn admin-view-soal [kodepel kode]
-  (let [datum (db/get-data (str "select * from bankproset where kode='" kode "'") 1)]
+  (let [datum (db/get-data (str "select * from bankproset where kode='" kode "'") 1)
+        status (datum :status)
+        kodesoal (if (= status "0") (datum :kodex) kode)]
     (layout/render "admin/view-soal.html" {:datum datum
                                              :nsoal (vec (range 1 (inc (datum :jsoal))))
-                                             :kategori "1"
                                              ;:pel pel
+                                             :kodesoal kodesoal
                                              :npretext (if (datum :pretext) (read-string (datum :pretext)) nil)
                                              :nsound (if (datum :sound) (read-string (datum :sound)) nil)
                                              ;:soalpath "http://127.0.0.1/resources/public"
@@ -315,10 +347,13 @@
 
 (defn admin-lihat-sekaligus [kodepel kode]
   (let [postkode (subs kode 1 (count kode))
-        datum (db/get-data (str "select * from bankproset where kode='" postkode "'") 1)]
+        datum (db/get-data (str "select * from bankproset where kode='" postkode "'") 1)
+        status (datum :status)
+        kodesoal (if (= status "0") (datum :kodex) postkode)]
     (layout/render "admin/view-soal-sekaligus.html" {:datum datum
                                                        ;:kodepel kodepel
                                                        :kode kode
+                                                       :kodesoal kodesoal
                                                        :npretext (if (datum :pretext) (read-string (datum :pretext)) nil)
                                                        :nsound (if (datum :sound) (read-string (datum :sound)) nil)
                                                        ;soalpath "http://localhost/resources/public"
@@ -766,19 +801,20 @@
                          King (if m-ing (:K m-ing) " ")
                          ]
                      (recur (conj a {:nis (subs nis ckosek (count nis))
-                                     :nama nama :ntot (num-to-str ntot 2) :kelas kelas
+                                     :nama nama :ntot ntot :kelas kelas
                                      :nmat (if (= nmat " ") " " (num-to-str nmat 2)) :Bmat Bmat :Smat Smat :Kmat Kmat
                                      :nipa (if (= nipa " ") " " (num-to-str nipa 2)) :Bipa Bipa :Sipa Sipa :Kipa Kipa
                                      :nind (if (= nind " ") " " (num-to-str nind 2)) :Bind Bind :Sind Sind :Kind Kind
                                      :ning (if (= ning " ") " " (num-to-str ning 2)) :Bing Bing :Sing Sing :King King})
                             (inc i)))))
-
+        daftar1 (reverse (sort-by :ntot daftar))
+        daftar2 (map #(update-in %1 [:ntot] num-to-str 2) daftar1)
         ]
     (if (= mode 1)
-    (layout/render "admin/hasil-test-ppdb.html" {:data (vec (reverse (sort-by :ntot daftar)))
+    (layout/render "admin/hasil-test-ppdb.html" {:data (vec daftar2)
                                                  :paket paket
                                                  :sekolah sekolah})
-    (let [datax (vec (reverse (sort-by :ntot daftar)))
+    (let [datax (vec daftar2)
           vdata (map (fn [x] [(:nis x)
                               (:nama x)
                               (:kelas x)
@@ -787,16 +823,24 @@
                               (:Bind x) (:Sind x) (:Kind x) (:nind x)
                               (:Bing x) (:Sing x) (:King x) (:ning x)
                               (:ntot x)]) datax)
-          header [["NIS" "NAMA" "KELAS" "B" "S" "K" "NIL" "B" "S" "K" "NIL"
-                   "B" "S" "K" "NIL" "B" "S" "K" "NIL" "TOTAL"]]
+          header [["NIS","NAMA","KELAS","MATEMATIKA","","","","SAINS","","","","INDONESIA","","","","INGGRIS","","","","TOTAL"]
+                  ["" "" "" "B" "S" "K" "NIL" "B" "S" "K" "NIL" "B" "S" "K" "NIL" "B" "S" "K" "NIL" ""]
+                   ]
           dataxcel (vec (concat header vdata))
-          wb (create-workbook "HASILTEST" dataxcel)]
-      (save-workbook! "dokumen/coba1.xls" wb)
-      (layout/render "admin/pesan.html" {:pesan "coba lihat di dokumen/coba1.xls"}))
+          vkls (st/replace kelas #" " "")
+          filename (str kosek "-" kodepaket "-" vkls ".xlsx")
+          wb (create-workbook vkls dataxcel)]
+      (save-workbook! (str "dokumen/" filename) wb)
+      ;(layout/render "admin/pesan.html" {:pesan "coba lihat di dokumen/coba1.xls"})
+      (resp/redirect (str "/files/" filename))
+      )
     )))
 
 ;;;routes
 (defroutes admin-routes
+
+  (GET "/files/:filename" [filename]
+       (file-response (str "dokumen/" filename)))
 
   (GET "/admin" []
       (admin-home))

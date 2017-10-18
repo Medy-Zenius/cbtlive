@@ -6,6 +6,7 @@
     var vid='{{user}}';
     var vkat='{{kategori}}';
     var vkunci='{{datum.kunci}}';
+    var kodesoal='{{kodesoal}}';
     var ns=[];
     {% for vns in nsoal %}
         ns.push({{vns}});
@@ -13,7 +14,7 @@
     var no=1;
     var jsoal={{datum.jsoal}};
     var jwaktu={{datum.waktu}}*60;
-    var kode='{{datum.kode}}';
+    //var kode='{{datum.kode}}';
     var jwb =[];
     var npt=[],nsou=[];
 
@@ -103,15 +104,15 @@
 
      function get_soal1(urla) {
         if (npt[no-1] != "-"){
-          urla_pretext = path + '/bankproset/'+ '{{datum.kodepel}}' + '/' + {{datum.kode}} + '/' + npt[no-1] + '.png';
-          //urla_pretext = path + '/' + {{datum.kode}} + '/' + npt[no-1] + '.png';
+          urla_pretext = path + '/bankproset/'+ '{{datum.kodepel}}' + '/' + kodesoal + '/' + npt[no-1] + '.png';
+          //urla_pretext = path + '/' + {{kodesoal}} + '/' + npt[no-1] + '.png';
           document.getElementById("pretext").innerHTML='<div><img src='+urla_pretext+'></div>';
         }else{
           document.getElementById("pretext").innerHTML='<div></div>';
         }
         // Sound atawa Suara
         if (nsou[no-1] != "-"){
-          urla_sound = path + '/bankproset/'+ '{{datum.kodepel}}' + '/' + {{datum.kode}} + '/' + nsou[no-1];
+          urla_sound = path + '/bankproset/'+ '{{datum.kodepel}}' + '/' + kodesoal + '/' + nsou[no-1];
           document.getElementById("sound").innerHTML='<div><audio src='+urla_sound+' controls></div>';
         }else{
           document.getElementById("sound").innerHTML='<div></div>';
@@ -124,11 +125,8 @@
       var vno=0;
       if (no>1){
         no-=1;vno=no-1;
-        if (vkat == "1"){
-          get_soal1(path + '/bankproset/'+ '{{datum.kodepel}}' + '/' + {{datum.kode}} + '/' + ns[vno] + '.png');
-        }else{
-          get_soal('/soal/'+kode+'/'+ns[vno]+'.html');
-        }
+          get_soal1(path + '/bankproset/'+ '{{datum.kodepel}}' + '/' + kodesoal + '/' + ns[vno] + '.png');
+
         document.getElementById("o"+vno).selected = "true";
         document.getElementById("xdarit").innerHTML = no+" dari "+jsoal;
       }
@@ -137,11 +135,9 @@
       var vno=0;
       if (no<jsoal){
         no+=1;vno=no-1;
-        if (vkat == "1"){
-          get_soal1(path + '/bankproset/'+ '{{datum.kodepel}}' + '/' + {{datum.kode}} + '/' + ns[vno] + '.png');
-        }else{
-          get_soal('/soal/'+kode+'/'+ns[vno]+'.html');
-        }
+
+          get_soal1(path + '/bankproset/'+ '{{datum.kodepel}}' + '/' + kodesoal + '/' + ns[vno] + '.png');
+
         document.getElementById("o"+vno).selected = "true";
         document.getElementById("xdarit").innerHTML = no+" dari "+jsoal;
       }
@@ -149,11 +145,9 @@
     function ganti_nomer(){
         var vno=document.getElementById("selno").value;
         no=parseInt(vno)+1;
-        if (vkat == "1"){
-          get_soal1(path + '/bankproset/'+ '{{datum.kodepel}}' + '/' + {{datum.kode}} + '/' + ns[no-1] + '.png');
-        }else{
-          get_soal('/soal/'+kode+'/'+ns[no-1]+'.html');
-        }
+
+          get_soal1(path + '/bankproset/'+ '{{datum.kodepel}}' + '/' + kodesoal + '/' + ns[no-1] + '.png');
+
         document.getElementById("o"+vno).selected = "true";
         document.getElementById("xdarit").innerHTML = no+" dari "+jsoal;
     }
@@ -191,11 +185,9 @@
    <div><h3 id="jawab"></h3></div>
 
 <script>
-    if (vkat == "1") {
-      get_soal1(path + '/bankproset/'+ '{{datum.kodepel}}' + '/' + {{datum.kode}} + '/' + ns[0] + '.png');
-    } else {
-      get_soal('/soal/'+kode+'/'+ns[0]+'.html');
-    }
+
+      get_soal1(path + '/bankproset/'+ '{{datum.kodepel}}' + '/' + kodesoal + '/' + ns[0] + '.png');
+
 </script>
 <div class="row">
   <br/>

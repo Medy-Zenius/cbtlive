@@ -91,3 +91,16 @@
         (do
           (db/update-data-1 "pg1" ["nilaimin=?" (:nilaimin (nth data i))] {:nm (read-string (:nilaimin (nth data i)))})
           (recur (inc i)))))))
+
+(defn updatedb-buat-kode []
+  (let [letters "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890"
+        sufik (loop [a [], i 0]
+                (if (= i 15)
+                  (apply str a)
+                  (recur (conj a (rand-nth letters)) (inc i))))
+        ]
+    sufik))
+
+(defn insert-all-kodex []
+  (let [data (db/get-data (str "select kode from bankproset") 2)]
+    (doseq [x data] (db/update-data-1 "bankproset" ["kode=?" (:kode x)] {:kodex (updatedb-buat-kode)}))))

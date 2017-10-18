@@ -21,6 +21,7 @@
     <script>
      var path='{{path}}';
      var npt=[],nsou=[];
+     var kodesoal='{{kodesoal}}';
 
     {% if npretext %}
       {% for vpt in npretext %} //pretext or wacana
@@ -42,13 +43,13 @@
       }
     {% endif %}
     for (i=1;i<={{datum.jsoal}};i++){
-      var simg=path + '/bankproset/'+'{{datum.kodepel}}'+'/'+{{datum.kode}}+'/'+ i + '.png';
+      var simg=path + '/bankproset/'+'{{datum.kodepel}}'+'/'+kodesoal+'/'+ i + '.png';
       var cnt='<tr><td style="vertical-align: top; padding: 5px">'+i+'.</td><td>';
       if (npt[i-1] !="-"){
-         cnt+='<img src='+path+'/bankproset/'+'{{datum.kodepel}}'+'/'+{{datum.kode}}+'/'+npt[i-1]+'.png><br>';
+         cnt+='<img src='+path+'/bankproset/'+'{{datum.kodepel}}'+'/'+kodesoal+'/'+npt[i-1]+'.png><br>';
       }
       if (nsou[i-1] !="-"){
-         urla_sound = path + '/bankproset/'+ '{{datum.kodepel}}' + '/' + {{datum.kode}} + '/' + nsou[i-1];
+         urla_sound = path + '/bankproset/'+ '{{datum.kodepel}}' + '/' + kodesoal + '/' + nsou[i-1];
          cnt+='<div><audio src='+urla_sound+' controls></div><br>';
       }
       cnt+='<img src='+simg+'></td></tr>';
