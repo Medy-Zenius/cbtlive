@@ -6,7 +6,9 @@
             [icbl.models.db :as db]
             [noir.session :as session]
             [clojure.data.json :as json]
-            ))
+            [icbl.models.share :as share]
+            )
+ (:import (java.io File)))
 
 (defn teacher-num-to-str [number dk]
   (-> (format (str "%." dk "f") (* number 1.0))
@@ -63,7 +65,8 @@
                                 :status "0"
                                 :skala 10
                                 :nbenar 1
-                                :nsalah 0})
+                                :nsalah 0
+                                :kodex (share/create-kode 32)})
       (layout/render "teacher/pesan.html" {:pesan (str "Berhasil daftarkan proset!")})
       (catch Exception ex
                   (layout/render "teacher/pesan.html" {:pesan (str "Gagal daftarkan proset! error: " ex)}))))
@@ -80,12 +83,13 @@
 
 (defn teacher-update-proset [kode pel ket jsoal waktu jumpil skala nbenar nsalah acak status]
   (let [postkode (subs kode 1 (count kode))
-        datum (db/get-data (str "select kunci,jenis,upto,pretext,sound from proset where kode='" postkode "'") 1)
+        datum (db/get-data (str "select kunci,jenis,upto,pretext,sound,status,kodex,id from proset where kode='" postkode "'") 1)
         oldkunci (datum :kunci)
         oldjenis (datum :jenis)
         oldupto (datum :upto)
         oldpretext (if (datum :pretext) (read-string (datum :pretext)) nil)
         oldsound (if (datum :sound) (read-string (datum :sound)) nil)
+        oldstatus (datum :status)
         cok (count oldkunci)
         vjsoal (Integer/parseInt jsoal)
         newkunci (cond
@@ -110,6 +114,8 @@
                      (= vjsoal cok) (str oldsound)
                      (< vjsoal cok) (str (vec (take vjsoal oldsound)))
                      :else (str (vec (concat oldsound (repeat (- vjsoal cok) "-"))))) nil)
+        id (datum :id)
+        kodex (datum :kodex)
         ]
   (try
     (db/update-data "proset" (str "kode='" postkode "'")
@@ -127,7 +133,16 @@
                      :skala (Integer/parseInt skala)
                      :nbenar (Integer/parseInt nbenar)
                      :nsalah (Integer/parseInt nsalah)})
+    (do
+    (if (not= status oldstatus)
+      (if (= status "0")
+        (.renameTo (File. (str "resources/public/proset/" id "/" postkode))
+                   (File. (str "resources/public/proset/" id "/" kodex)))
+        (.renameTo (File. (str "resources/public/proset/" id "/" kodex))
+                   (File. (str "resources/public/proset/" id "/" postkode))))
+      nil)
     (layout/render "teacher/pesan.html" {:pesan (str "Berhasil update proset!")})
+      )
     (catch Exception ex
                   (layout/render "teacher/pesan.html" {:pesan (str "Gagal update proset! error: " ex)})))))
 
@@ -147,20 +162,26 @@
                                                           :kset "L"})))
 
 (defn teacher-upload-file [kode id]
-  (do
-    (io/create-path (str "resources/public/proset/" id "/" kode) true)
-    (layout/render "teacher/upload.html" {:kode kode})))
+  (let [datum (db/get-data (str "select status,kodex from proset where kode='" kode "'") 1)
+        status (datum :status)
+        kodex (datum :kodex)]
+    (if (= status "0")
+      (do
+        (io/create-path (str "resources/public/proset/" id "/" kodex) true)
+        (layout/render "teacher/upload.html" {:kode kode})))))
 
 (defn handle-teacher-upload [id kode file]
-  (try
-    (if (vector? file)
-      (doseq [i file]
-          (io/upload-file (str "resources/public/proset/" id "/" kode) i))
-      (io/upload-file (str "resources/public/proset/" id "/" kode) file))
-    (layout/render "teacher/pesan.html" {:pesan "Berhasil upload file!"})
-    (catch Exception ex
-                  (layout/render "teacher/pesan.html" {:pesan (str "Gagal upload file! error: " ex)}))
-    ))
+  (let [datum (db/get-data (str "select kodex from proset where kode='" kode "'") 1)
+        kodex (datum :kodex)]
+    (try
+      (if (vector? file)
+        (doseq [i file]
+            (io/upload-file (str "resources/public/proset/" id "/" kodex) i))
+        (io/upload-file (str "resources/public/proset/" id "/" kodex) file))
+      (layout/render "teacher/pesan.html" {:pesan "Berhasil upload file!"})
+      (catch Exception ex
+                    (layout/render "teacher/pesan.html" {:pesan (str "Gagal upload file! error: " ex)}))
+      )))
 
 (defn teacher-buat-kunci [kode]
   (let [datum (db/get-data (str "select jsoal from proset where kode='" kode "'") 1)]
@@ -421,21 +442,25 @@
   (let [prekode (subs kode 0 1)
         postkode (subs kode 1 (count kode))
         tabel (if (= prekode "B") "bankproset" "proset")
-        datum (db/get-data (str "select * from " tabel " where kode='" postkode "'") 1)]
+        datum (db/get-data (str "select * from " tabel " where kode='" postkode "'") 1)
+        status (datum :status)
+        kodesoal (if (= status "0") (datum :kodex) postkode)]
     (layout/render html {:datum datum
-                                             :nsoal (vec (range 1 (inc (datum :jsoal))))
-                                             :kategori "1"
-                                             :npretext (if (datum :pretext) (read-string (datum :pretext)) nil)
-                                             :nsound (if (datum :sound) (read-string (datum :sound)) nil)
-                                             :kode kode
-                                             ;:soalpath (str (session/get :ip) "/resources/public/proset/" (session/get :id))
-                                             })))
+                         :nsoal (vec (range 1 (inc (datum :jsoal))))
+                         :kategori "1"
+                         :kodesoal kodesoal
+                         :npretext (if (datum :pretext) (read-string (datum :pretext)) nil)
+                         :nsound (if (datum :sound) (read-string (datum :sound)) nil)
+                         :kode kode })))
 
 (defn teacher-lihat-sekaligus [kode]
   (let [postkode (subs kode 1 (count kode))
-        datum (db/get-data (str "select * from proset where kode='" postkode "'") 1)]
+        datum (db/get-data (str "select * from proset where kode='" postkode "'") 1)
+        status (datum :status)
+        kodesoal (if (= status "0") (datum :kodex) postkode)]
     (layout/render "teacher/view-soal-sekaligus.html" {:datum datum
                                                        :kode kode
+                                                       :kodesoal kodesoal
                                                        :npretext (if (datum :pretext) (read-string (datum :pretext)) nil)
                                                        :nsound (if (datum :sound) (read-string (datum :sound)) nil)
                                                        ;soalpath "http://localhost/resources/public"
@@ -569,10 +594,13 @@
 
 (defn handle-teacher-lihat-soal-bp [pel kode]
   (let [postkode (subs kode 1 (count kode))
-        datum (db/get-data (str "select * from bankproset where kode='" postkode "'") 1)]
+        datum (db/get-data (str "select * from bankproset where kode='" postkode "'") 1)
+        status (datum :status)
+        kodesoal (if (= status "0") (datum :kodex) postkode)]
     (layout/render "admin/view-soal-sekaligus.html" {:datum datum
                                                        :pel pel
                                                        :kode kode
+                                                       :kodesoal kodesoal
                                                        :npretext (if (datum :pretext) (read-string (datum :pretext)) nil)
                                                        :nsound (if (datum :sound) (read-string (datum :sound)) nil)
                                                        ;soalpath "http://localhost/resources/public"
@@ -605,16 +633,19 @@
     (if data
       (layout/render "admin/list-proset.html" {:data data
                                                :action act
-                                               :target "_blank"
+                                               :target ""
                                                })
       (layout/render "teacher/pesan.html" {:pesan "Tidak ada catatan di buku!"}))))
 
 (defn handle-teacher-lihat-soal-bp-1 [kode]
   (let [postkode (subs kode 1 (count kode))
-        datum (db/get-data (str "select * from bankproset where kode='" postkode "'") 1)]
+        datum (db/get-data (str "select * from bankproset where kode='" postkode "'") 1)
+        status (datum :status)
+        kodesoal (if (= status "0") (datum :kodex) postkode)]
     (layout/render "admin/view-soal-sekaligus.html" {:datum datum
                                                      :pel (:pelajaran datum)
                                                      :kode kode
+                                                     :kodesoal kodesoal
                                                      :npretext (if (datum :pretext) (read-string (datum :pretext)) nil)
                                                      :nsound (if (datum :sound) (read-string (datum :sound)) nil)
                                                      ;soalpath "http://localhost/resources/public"

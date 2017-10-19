@@ -95,12 +95,12 @@
 (defn updatedb-buat-kode []
   (let [letters "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890"
         sufik (loop [a [], i 0]
-                (if (= i 15)
+                (if (= i 32)
                   (apply str a)
                   (recur (conj a (rand-nth letters)) (inc i))))
         ]
     sufik))
 
-(defn insert-all-kodex []
-  (let [data (db/get-data (str "select kode from bankproset") 2)]
-    (doseq [x data] (db/update-data-1 "bankproset" ["kode=?" (:kode x)] {:kodex (updatedb-buat-kode)}))))
+(defn insert-all-kodex [dbase]
+  (let [data (db/get-data (str "select kode from " dbase) 2)]
+    (doseq [x data] (db/update-data-1 dbase ["kode=?" (:kode x)] {:kodex (updatedb-buat-kode)}))))

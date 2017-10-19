@@ -12,7 +12,7 @@
     var no=1;
     var jsoal={{datum.jsoal}};
     var jwaktu={{datum.waktu}}*60;
-    var kode='{{datum.kode}}';
+    var kodesoal='{{kodesoal}}';
     var jwb =[];
     var npt=[],nsou=[];
 
@@ -102,7 +102,7 @@
 
      function get_soal1(urla) {
         if (npt[no-1] != "-"){
-          urla_pretext = path + '/proset/'+ '{{datum.id}}' + '/' + {{datum.kode}} + '/' + npt[no-1] + '.png';
+          urla_pretext = path + '/proset/'+ '{{datum.id}}' + '/' + kodesoal + '/' + npt[no-1] + '.png';
           //urla_pretext = path + '/' + {{datum.kode}} + '/' + npt[no-1] + '.png';
           document.getElementById("pretext").innerHTML='<div><img src='+urla_pretext+'></div>';
         }else{
@@ -110,7 +110,7 @@
         }
         // Sound atawa Suara
         if (nsou[no-1] != "-"){
-          urla_sound = path + '/proset/'+ '{{datum.id}}' + '/' + {{datum.kode}} + '/' + nsou[no-1];
+          urla_sound = path + '/proset/'+ '{{datum.id}}' + '/' + kodesoal + '/' + nsou[no-1];
           document.getElementById("sound").innerHTML='<div><audio src='+urla_sound+' controls></div>';
         }else{
           document.getElementById("sound").innerHTML='<div></div>';
@@ -123,7 +123,7 @@
       var vno=0;
       if (no>1){
         no-=1;vno=no-1;
-          get_soal1(path + '/proset/'+ '{{datum.id}}' + '/' + {{datum.kode}} + '/' + ns[vno] + '.png');
+          get_soal1(path + '/proset/'+ '{{datum.id}}' + '/' + kodesoal + '/' + ns[vno] + '.png');
 
         document.getElementById("o"+vno).selected = "true";
         document.getElementById("xdarit").innerHTML = no+" dari "+jsoal;
@@ -133,7 +133,7 @@
       var vno=0;
       if (no<jsoal){
         no+=1;vno=no-1;
-          get_soal1(path + '/proset/'+ '{{datum.id}}' + '/' + {{datum.kode}} + '/' + ns[vno] + '.png');
+          get_soal1(path + '/proset/'+ '{{datum.id}}' + '/' + kodesoal + '/' + ns[vno] + '.png');
 
         document.getElementById("o"+vno).selected = "true";
         document.getElementById("xdarit").innerHTML = no+" dari "+jsoal;
@@ -142,7 +142,7 @@
     function ganti_nomer(){
         var vno=document.getElementById("selno").value;
         no=parseInt(vno)+1;
-          get_soal1(path + '/proset/'+ '{{datum.id}}' + '/' + {{datum.kode}} + '/' + ns[no-1] + '.png');
+          get_soal1(path + '/proset/'+ '{{datum.id}}' + '/' + kodesoal + '/' + ns[no-1] + '.png');
 
         document.getElementById("o"+vno).selected = "true";
         document.getElementById("xdarit").innerHTML = no+" dari "+jsoal;
@@ -181,7 +181,7 @@
    <div><h3 id="jawab"></h3></div>
 
 <script>
-      get_soal1(path + '/proset/'+ '{{datum.id}}' + '/' + {{datum.kode}} + '/' + ns[0] + '.png');
+      get_soal1(path + '/proset/'+ '{{datum.id}}' + '/' + kodesoal + '/' + ns[0] + '.png');
 </script>
 <div class="row">
   <br/>

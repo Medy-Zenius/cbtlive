@@ -38,3 +38,15 @@ exit
 exit
 (start-server)
 exit
+(start-server)
+exit
+(start-server)
+exit
+(use 'icbl.models.updatedb)
+(insert-all-kodex "proset")
+(use 'icbl.models.updatedb :reload)
+(insert-all-kodex "proset")
+(insert-all-kodex "bankproset")
+exit
+(start-server)
+exit
