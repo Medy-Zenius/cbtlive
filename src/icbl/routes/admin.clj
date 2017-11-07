@@ -18,15 +18,6 @@
   (-> (format (str "%." dk "f") (* number 1.0))
       (clojure.string/replace #"\." ",")))
 
-(defn admin-buat-kode []
-  (let [letters "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890"
-        sufik (loop [a [], i 0]
-                (if (= i 15)
-                  (apply str a)
-                  (recur (conj a (rand-nth letters)) (inc i))))
-        ]
-    sufik))
-
 (defn admin-home []
   (layout/render "admin/home.html")
   )
@@ -171,7 +162,7 @@
                                 :skala 10
                                 :nbenar 1
                                 :nsalah 0
-                                :kodex (admin-buat-kode)})
+                                :kodex (share/create-kode 32)})
       (layout/render "admin/pesan.html" {:pesan (str "Berhasil daftarkan proset!")})
       (catch Exception ex
                   (layout/render "admin/pesan.html" {:pesan (str "Gagal daftarkan proset! error: " ex)}))))

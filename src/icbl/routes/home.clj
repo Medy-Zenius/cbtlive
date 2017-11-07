@@ -55,8 +55,11 @@
 
 (defn handle-kodeto1 [kodeto]
   (let [pre (subs kodeto 0 1)
-        kd (subs kodeto 1 (count kodeto))]
-     (if (and (not= pre "B") (not= pre "L"))
+        kd (subs kodeto 1 (count kodeto))
+        kdns (clojure.string/replace kd #" " "")
+        f-nkd (= (count kd) (count kdns))
+        f-int-kd (integer? (read-string kd))]
+     (if (or (and (not= pre "B") (not= pre "L")) (not f-nkd) (not f-int-kd))
        (layout/render "home/kode1.html" {:error "Paket Soal dengan kode tersebut tidak ada!" :kodeto kodeto})
        (let [data (if (= pre "B")
                       (db/get-data (str "select * from bankproset where kode='" kd "'") 1)

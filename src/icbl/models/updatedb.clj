@@ -1,13 +1,14 @@
 (ns icbl.models.updatedb
     (:require [clojure.java.jdbc :as sql]
               [icbl.models.db :as db]
-              [clojure.string :as st]))
+              [clojure.string :as st])
+    (:import (java.io File)))
 
 (def db1
 {:subprotocol "postgresql"
-:subname "//localhost:5432/tosmafat"
-:user "tosma"
-:password "tosma2000"})
+:subname "//localhost:5432/cbtzencen"
+:user "tosmp"
+:password "tosmp2000"})
 
 (defmacro with-db1 [f & body]
 `(sql/with-connection ~db1 (~f ~@body)))
@@ -16,6 +17,13 @@
   (if (= toggle 1)
   (with-db1 sql/with-query-results res [query] (first res))
   (with-db1 sql/with-query-results res [query] (doall res))))
+
+(defn update-data-2
+  "table: table name
+  query: where-params
+  data: column to update"
+  [table query data]
+  (with-db1 sql/update-values (keyword table) query data))
 
 (defn update [id pelajaran]
   (let [datafat (get-data1 (str "select * from proset where id='" id "'") 2)
@@ -102,5 +110,19 @@
     sufik))
 
 (defn insert-all-kodex [dbase]
-  (let [data (db/get-data (str "select kode from " dbase) 2)]
-    (doseq [x data] (db/update-data-1 dbase ["kode=?" (:kode x)] {:kodex (updatedb-buat-kode)}))))
+  (let [data (get-data1 (str "select kode from " dbase) 2)]
+    (doseq [x data] (update-data-2 dbase ["kode=?" (:kode x)] {:kodex (updatedb-buat-kode)}))))
+
+(defn rename-dir-soal [dbase]
+  (let [data (if (= dbase "proset")
+                 (db/get-data "select kode,kodex,id from proset where status='0'" 2)
+                 (db/get-data "select kode,kodex,kodepel from bankproset where status='0'" 2))
+        ]
+    (if (= dbase "proset")
+        (doseq [x data]
+               (.renameTo (File. (str "resources/public/proset/" (:id x) "/" (:kode x)))
+                          (File. (str "resources/public/proset/" (:id x) "/" (:kodex x)))))
+        (doseq [x data]
+               (.renameTo (File. (str "resources/public/bankproset/" (:kodepel x) "/" (:kode x)))
+                          (File. (str "resources/public/bankproset/" (:kodepel x) "/" (:kodex x)))))
+      )))
