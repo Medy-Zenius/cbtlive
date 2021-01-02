@@ -21,7 +21,9 @@
   :repl-options {:init-ns icbl.repl
                  :timeout 1200000}
   :jvm-opts ["-Xmx512M"]
-  :plugins [[lein-ring "0.8.13"]]
+  :plugins [[lein-ring "0.8.13"]
+  										[org.clojure/core.unify "0.5.7"]
+												[nightlight/lein-nightlight "RELEASE"]]
   :ring {:handler icbl.handler/app
          :init icbl.handler/init
          :destroy icbl.handler/destroy

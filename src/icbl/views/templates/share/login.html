@@ -1,46 +1,73 @@
-<html>
-  <head>
-    <meta charset="utf-8" />
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>USBK - Ujian Sekolah Berbasis Komputer</title>
-    <link href="css/bootstrap.min.css" rel="stylesheet">
-    <!-- <link href="css/bootstrap.theme.css" rel="stylesheet"> -->
-    <link href="css/signin.css" rel="stylesheet">
-    <!-- <script src="jquery/jquery-1.12.2.min.js"></script> -->
-    <script src="js/bootstrap.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="css/custom.css">
-  </head>
-  <body class="login-background">
-    <div align="center">
-       <img src="img/logo-zenpres.png">
-    </div>
-    <div class="container">
-      <div class="row">
+    <title>Login Form Rayflash</title>
+    <!-- cssBstrap -->
+    <link rel="stylesheet" href="css/bootstrap2.css" />
+    <!-- icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" integrity="sha512-+4zCK9k+qNFUR5X+cKL9EIR+ZOhtIloNl9GIKS57V1MyNsYpYcUrUeQc9vNfzsWfV28IaLL3i96P9sdNyeRssA==" crossorigin="anonymous" />
+    <!-- styleCss -->
+    <link rel="stylesheet" href="css/bodyQuiz.css" />
+</head>
 
-          <div class="panel panel-default panel-login middle-absolute">
-          <div class="col-xs-12">
-            <div class="panel-body">
-
-              <form class="form-signin" action="{{action}}" method="POST">
-                <h2 class="form-signin-heading text-center">Login</h2>
-                <label for="inputEmail" class="sr-only">ID Pengguna</label>
-                <input type="text" name="nis" value="{{nis}}" class="form-control" placeholder="ID Pengguna" required autofocus>
-                <label for="inputPassword" class="sr-only">Kata Sandi</label>
-                <input type="password" name="pass" class="form-control" placeholder="Kata Sandi" required>
-                <button class="btn btn-lg btn-bluegreen btn-block" type="submit">Login</button>
-                <span class="label label-danger">{{error}}</span>
-              </form>
+<body>
+    <div class="wrapper-body">
+        <section class="wrapper">
+            <div class="card">
+                <div class="card-body">
+                    <!-- circlePath -->
+                    <div class="circle__img"></div>
+                    <!-- headerCard -->
+                    <header class="form__header text-center">
+                        <i class="fas fa-user-circle"></i>
+                        <p>Login Here</p>
+                    </header>
+                    <!-- form -->
+                    <form action="{{action}}" method="POST" class="main__form text-center" id="form">
+                        <div class="form-group my-0">
+                            <label class="my-0 label-form">
+                                <i class="fas fa-user icon"></i>
+                                <input type="text" class="form__input" placeholder="ID Pengguna" name="nis" value="{{nis}}" required autofocus />
+                            </label>
+                        </div>
+                        <div class="form-group my-0 mb-3">
+                            <label class="my-0">
+                                <i class="fas fa-lock icon"></i>
+                                <input type="password" class="form__input" placeholder="Kata Sandi" name="pass" required />
+                            </label>
+                        </div>
+                        <!-- btn LOGIN -->
+                        <div class="form-group mt-5">
+                            <label>
+                                <button class="button-login" type="submit">Login</button>
+                            </label>
+                        </div>
+                        <!-- <span class="check__box"></span> -->
+                        <!-- alert -->
+                        <div class="alert alert-danger mt-3 alert-form p-1 " role="alert" id="alert-msg">{{error}}</div>
+                    </form>
+                </div>
             </div>
-          </div>
-          <br>
-          <!--
-          <div class="row" align="center">
-            <b><div>Siswa belum registrasi?</div></b>
-            <a href="/registrasi-siswa" class="text-center btn btn-md btn-bluegreen">Registrasi</a>
-          </div>
-          -->
-        </div>
-      </div>
-      </div> <!-- /container -->
-    </body>
-  </html>
+        </section>
+    </div>
+    <!-- WrapperContainer -->
+    <script src="js/jquery-3.5.1.min.js"></script>
+    <script src="js/bootstrap2.js"></script>
+    <script>
+    const errorMessage = $('#alert-msg')
+
+    const showErrorMessage = () => {
+        errorMessage.addClass('display_block')
+    }
+
+    if(errorMessage.text().length > 0){
+      showErrorMessage()
+    }
+
+    </script>
+</body>
+
+</html>
